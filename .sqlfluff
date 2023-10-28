@@ -1,0 +1,13 @@
+[sqlfluff]
+dialect = postgres
+ignore_templated_areas = True
+verbose = 2
+fix_even_unparsable = True
+templater = jinja
+sql_file_exts = .sql
+
+[sqlfluff:indentation]
+tab_space_size = 2
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower
