@@ -1,5 +1,6 @@
 install: ## Install pre-req software
 	@pip3 install j2cli
+	@yarn
 .PHONY: install
 
 builds: ## Build all available framework migrations according to the basic data
@@ -11,3 +12,8 @@ help: ## Show this help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[0;36m%-12s\033[m %s\n", $$1, $$2}'
 	@echo ""
 .PHONY: help
+
+
+tests: ## Run available tests
+	@yarn jest tests/unit/functions.spec.js --detectOpenHandles
+.PHONY: tests
