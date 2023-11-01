@@ -35,6 +35,7 @@ jobs:
         with:
           node-version-file: "packages/pg_mod/.nvmrc"
           cache: yarn
+          cache-dependency-path: "packages/pg_mod/yarn.lock"
 
       - name: Install
         run: |
@@ -47,4 +48,3 @@ jobs:
         run: |
           cd packages/pg_mod/
           make tests
-
