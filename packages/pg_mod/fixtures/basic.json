@@ -1,0 +1,6 @@
+{
+  "private_schema": "private",
+  "public_schema": "public",
+  "authenticated_roles": ["authenticated"],
+  "owner_role": "postgres"
+}
