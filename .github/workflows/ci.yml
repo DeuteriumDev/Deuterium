@@ -1,0 +1,50 @@
+# @format
+
+name: "CI Workflow"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+concurrency:
+  group: "${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}"
+  cancel-in-progress: true
+
+# The `jobs` key groups together all the jobs that run in the workflow file.
+jobs:
+  test-pg-mod:
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 54322:5432
+
+    name: "[pg_mod] run tests"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: "Setup node"
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: "packages/pg_mod/.nvmrc"
+          cache: yarn
+
+      - name: Install
+        run: |
+          cd packages/pg_mod/
+          make install
+
+      - name: Test
+        env:
+          DB_CONNECTION: postgresql://postgres:postgres@localhost:54322/postgres
+        run: |
+          cd packages/pg_mod/
+          make tests
+
