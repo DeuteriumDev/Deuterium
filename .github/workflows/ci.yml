@@ -27,24 +27,18 @@ jobs:
     name: "[pg_mod] run tests"
     runs-on: "ubuntu-latest"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: "Setup node"
         uses: actions/setup-node@v3
         with:
           node-version-file: "packages/pg_mod/.nvmrc"
           cache: yarn
           cache-dependency-path: "packages/pg_mod/yarn.lock"
-
-      - name: Install
-        run: |
+      - run: |
           cd packages/pg_mod/
           make install
-
-      - name: Test
-        env:
-          DB_CONNECTION: postgresql://postgres:postgres@localhost:54322/postgres
-        run: |
+      - run: |
           cd packages/pg_mod/
           make tests
+        env:
+          DB_CONNECTION: postgresql://postgres:postgres@localhost:54322/postgres
