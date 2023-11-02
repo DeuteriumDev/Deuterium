@@ -12,7 +12,7 @@ function loginAsBuilder(client) {
 function fileLoaderBuilder(client) {
   return async (file, data) => {
     const { stdout: sql } = await exec(
-      `"bash ./scripts/compile_sql.sh" ${file} ${data}`
+      `./scripts/compile_sql.sh ${file} ${data}`
     );
     return await client.query(sql);
   };

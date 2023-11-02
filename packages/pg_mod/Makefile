@@ -4,7 +4,7 @@ install: ## Install pre-req software
 .PHONY: install
 
 builds: ## Build all available framework migrations according to the basic data
-	@bash ./scripts/compile_sql.sh templates/frameworks/supabase.sql fixtures/basic.json > ./builds/supabase.sql
+	@./scripts/compile_sql.sh templates/frameworks/supabase.sql fixtures/basic.json > ./builds/supabase.sql
 .PHONY: builds
  
 help: ## Show this help
