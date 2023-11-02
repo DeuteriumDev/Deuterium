@@ -1,7 +1,7 @@
 {
   "name": "pg_mod",
   "packageManager": "yarn@4.0.1",
-  "devDependencies": {
+  "dependencies": {
     "dotenv": "^16.3.1",
     "jest": "^29.7.0",
     "pg": "^8.11.3"

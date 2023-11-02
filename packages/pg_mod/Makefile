@@ -1,6 +1,6 @@
 install: ## Install pre-req software
 	@pip3 install j2cli
-	@yarn install --frozen-lockfile
+	@yarn install --immutable
 .PHONY: install
 
 builds: ## Build all available framework migrations according to the basic data
