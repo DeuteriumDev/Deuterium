@@ -24,20 +24,22 @@ jobs:
         ports:
           - 54322:5432
 
-    name: "[pg_mod] run tests"
+    name: "[pg_mod]() run tests"
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v4
-      - name: "Setup node"
+      - name: "Setup"
         uses: actions/setup-node@v3
         with:
           node-version-file: "packages/pg_mod/.nvmrc"
           cache: yarn
           cache-dependency-path: "packages/pg_mod/yarn.lock"
-      - run: |
+      - name: Install
+        run: |
           cd packages/pg_mod/
           make install
-      - run: |
+      - name: Tests
+        run: |
           cd packages/pg_mod/
           make tests
         env:
