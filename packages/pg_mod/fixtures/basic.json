@@ -3,5 +3,6 @@
   "public_schema": "public",
   "authenticated_roles": ["authenticated"],
   "owner": "postgres",
-  "skip_authenticated_roles": false
+  "include_authenticated_roles": false,
+  "include_timestamps": false
 }
