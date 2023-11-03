@@ -18,7 +18,7 @@ Steps:
 describe('functions.sql', () => {
   beforeAll(async () => {
     await client.connect();
-    await fileLoader('templates/core/cleanup.sql', 'fixtures/basic.json');
+    await fileLoader('templates/extra/cleanup.sql', 'fixtures/basic.json');
     await fileLoader('templates/core/roles.sql', 'fixtures/basic.json');
     await fileLoader('templates/core/schemas.sql', 'fixtures/basic.json');
     await fileLoader('templates/core/tables.sql', 'fixtures/basic.json');
