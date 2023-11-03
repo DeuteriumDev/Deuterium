@@ -25,7 +25,11 @@ grant execute on function function {{ private_schema }}.<snake_case_name> to {{ 
 */
 
 -- get_user_id
-create or replace function {{ private_schema }}.get_user_id() returns integer as $$
+create or replace function {{ private_schema }}.get_user_id() returns {% if user_id_type == 'serial' -%}
+    int
+    {% else %}
+    {{ user_id_type }}
+    {% endif %} as $$
   select 1
 $$ language sql stable;
 

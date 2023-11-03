@@ -8,6 +8,10 @@ drop function if exists {{ private_schema }}.is_member_of(
   user_id_arg uuid, group_id_arg uuid
 );
 
+{% if create_users_table %}
+drop table if exists {{ users_table }};
+{% endif %}
+
 drop table if exists {{ public_schema }}.group_permissions;
 drop table if exists {{ public_schema }}.groups;
 drop table if exists {{ private_schema }}.documents;

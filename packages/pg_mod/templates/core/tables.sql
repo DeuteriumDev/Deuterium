@@ -89,3 +89,36 @@ alter table {{ public_schema }}.group_permissions owner to {{ owner }};
 alter table {{ public_schema }}.group_permissions ENABLE ROW LEVEL SECURITY;
 
 comment on table {{ public_schema }}.group_permissions is E'Permission levels for editing a group. The `owner_group_id` is the owner-group of permissions, and the `target_group_id` is the group that permission applies to. Both can be the same group to give its members access to their own group.';
+
+{% if create_users_table -%}
+-- users, optional table
+CREATE TABLE {{ users_table }} (
+    id {{ user_id_type }} PRIMARY KEY,
+    email text
+);
+
+alter table {{ users_table }} owner to {{ owner }};
+
+alter table {{ users_table }} ENABLE ROW LEVEL SECURITY;
+{% endif %}
+
+-- group_members
+CREATE TABLE {{ public_schema }}.group_members (
+    group_id uuid,
+    user_id {% if user_id_type == 'serial' -%}
+    int
+    {% else %}
+    {{ user_id_type }}
+    {% endif %}
+    PRIMARY KEY
+);
+
+alter table {{ public_schema }}.group_members ADD CONSTRAINT
+    group_members_group_id_fkey FOREIGN KEY (group_id) REFERENCES {{ public_schema }}.groups;
+
+alter table {{ public_schema }}.group_members ADD CONSTRAINT
+    group_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES {{ users_table }};
+
+alter table {{ public_schema }}.group_members owner to {{ owner }};
+
+alter table {{ public_schema }}.group_members ENABLE ROW LEVEL SECURITY;
