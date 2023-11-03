@@ -2,6 +2,6 @@
   "private_schema": "private",
   "public_schema": "public",
   "authenticated_roles": ["authenticated"],
-  "owner_role": "postgres",
+  "owner": "postgres",
   "skip_authenticated_roles": false
 }

@@ -50,7 +50,7 @@ grant execute on function {{ private_schema }}.get_user_id to {{ authenticated_r
 --   user_id_arg uuid, group_id_arg uuid
 -- ) is E'Given [user_id] and [group_id], returns boolean indicating if user is member of group. Does not include child-groups as members.';
 
--- alter function {{ private_schema }}.is_member_of owner to {{ owner_role }};
+-- alter function {{ private_schema }}.is_member_of owner to {{ owner }};
 
 -- grant execute on function {{ private_schema }}.is_member_of to {{ authenticated_roles|join(', ') }};
 
@@ -74,6 +74,6 @@ comment on function {{ private_schema }}.reduce_permissions(
   permissions_inherit_chain_array_arg bool[], permissions_aggregate_array_arg anyarray
 ) is E'Given the [permissions_inherit_chain_array_arg] and [permissions_aggregate_array_arg], returns a reduced `bool[]` of C,R,U,D permissions';
 
-alter function {{ private_schema }}.reduce_permissions owner to {{ owner_role }};
+alter function {{ private_schema }}.reduce_permissions owner to {{ owner }};
 
 grant execute on function {{ private_schema }}.reduce_permissions to {{ authenticated_roles|join(', ') }};
