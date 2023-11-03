@@ -103,7 +103,7 @@ alter table {{ users_table }} ENABLE ROW LEVEL SECURITY;
 {% endif %}
 
 -- group_members
-CREATE TABLE {{ public_schema }}.group_members (
+create table {{ public_schema }}.group_members (
     group_id uuid,
     user_id {% if user_id_type == 'serial' -%}
     int
@@ -122,3 +122,29 @@ alter table {{ public_schema }}.group_members ADD CONSTRAINT
 alter table {{ public_schema }}.group_members owner to {{ owner }};
 
 alter table {{ public_schema }}.group_members ENABLE ROW LEVEL SECURITY;
+
+-- document_permissions
+create table {{ public_schema }}.document_permissions (
+    id uuid DEFAULT gen_random_uuid() primary key,
+    {% if include_timestamps %}
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    {% endif %}
+    can_create boolean,
+    can_read boolean,
+    can_update boolean,
+    can_delete boolean,
+    document_id uuid,
+    group_id uuid NOT NULL
+);
+
+alter table {{ public_schema }}.document_permissions ADD CONSTRAINT
+    document_permissions_fkey FOREIGN KEY (document_id) REFERENCES {{ private_schema }}.documents;
+
+alter table {{ public_schema }}.document_permissions ADD CONSTRAINT
+    group_fkey FOREIGN KEY (group_id) REFERENCES {{ public_schema }}.groups;
+
+alter table {{ public_schema }}.document_permissions owner to {{ owner }};
+
+alter table {{ public_schema }}.document_permissions ENABLE ROW LEVEL SECURITY;
+
