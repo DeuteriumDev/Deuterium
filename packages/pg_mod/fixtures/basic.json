@@ -3,7 +3,7 @@
   "public_schema": "public",
   "authenticated_roles": ["authenticated"],
   "owner": "postgres",
-  "include_authenticated_roles": false,
+  "include_authenticated_roles": true,
   "include_timestamps": false,
   "create_users_table": true,
   "user_id_type": "serial",
