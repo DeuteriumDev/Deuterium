@@ -11,10 +11,22 @@ function loginAsBuilder(client) {
 
 function fileLoaderBuilder(client) {
   return async (file, data) => {
-    const { stdout: sql } = await exec(
-      `./scripts/compile_sql.sh ${file} ${data}`
-    );
-    return await client.query(sql);
+    // elevate scope to increase error context
+    let sql;
+    try {
+      const { stdout } = await exec(`./scripts/compile_sql.sh ${file} ${data}`);
+      sql = stdout;
+      return await client.query(sql);
+    } catch (error) {
+      throw Error('FileLoaderError', {
+        cause: `
+          file: ${file}
+          data: ${data}
+          sqlError: ${error}
+          sql: ${sql}
+        `,
+      });
+    }
   };
 }
 

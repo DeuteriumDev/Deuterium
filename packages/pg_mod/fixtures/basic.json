@@ -2,6 +2,10 @@
   "private_schema": "private",
   "public_schema": "public",
   "authenticated_roles": ["authenticated"],
-  "owner_role": "postgres",
-  "skip_authenticated_roles": false
+  "owner": "postgres",
+  "include_authenticated_roles": true,
+  "include_timestamps": false,
+  "create_users_table": true,
+  "user_id_type": "serial",
+  "users_table": "public.users"
 }
