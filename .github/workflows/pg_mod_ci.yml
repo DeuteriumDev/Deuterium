@@ -1,17 +1,21 @@
 # @format
 
-name: "CI Workflow"
+name: "[pg_mod] CI"
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
+    paths:
+      - packages/pg_mod/**
+  pull_request:
+    types: [opened, reopened]
+
 concurrency:
   group: "${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}"
   cancel-in-progress: true
 
-# The `jobs` key groups together all the jobs that run in the workflow file.
 jobs:
   test-pg-mod:
     services:
@@ -24,7 +28,7 @@ jobs:
         ports:
           - 54322:5432
 
-    name: "[pg_mod]() run tests"
+    name: "[pg_mod] run tests"
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v4
