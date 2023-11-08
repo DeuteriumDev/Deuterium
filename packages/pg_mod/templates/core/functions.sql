@@ -25,11 +25,7 @@ grant execute on function function {{ private_schema }}.<snake_case_name> to {{ 
 */
 
 -- get_user_id
-create or replace function {{ private_schema }}.get_user_id() returns {% if user_id_type == 'serial' -%}
-    int
-    {% else %}
-    {{ user_id_type }}
-    {% endif %} as $$
+create or replace function {{ private_schema }}.get_user_id() returns int as $$
   select 1
 $$ language sql stable;
 
@@ -39,24 +35,32 @@ grant execute on function {{ private_schema }}.get_user_id to {{ authenticated_r
 
 
 -- is_member_of
--- create or replace function {{ private_schema }}.is_member_of(
---   user_id_arg uuid, group_id_arg uuid
--- ) returns bool as $$
--- select exists (
--- 	SELECT *
--- 	FROM {{ public_schema }}.group_members m
--- 	WHERE m.group_id = group_id_arg
--- 	AND m.user_id = user_id_arg
--- );
--- $$ language sql security definer;
+create or replace function {{ private_schema }}.is_member_of(
+  user_id_arg {% if user_id_type == 'serial' -%}
+    int
+    {% else %}
+    {{ user_id_type }}
+    {% endif %}, group_id_arg uuid
+) returns bool as $$
+select exists (
+	SELECT *
+	FROM {{ public_schema }}.group_members m
+	WHERE m.group_id = group_id_arg
+	AND m.user_id = user_id_arg
+);
+$$ language sql security definer;
 
--- comment on function {{ private_schema }}.is_member_of(
---   user_id_arg uuid, group_id_arg uuid
--- ) is E'Given [user_id] and [group_id], returns boolean indicating if user is member of group. Does not include child-groups as members.';
+comment on function {{ private_schema }}.is_member_of(
+  user_id_arg {% if user_id_type == 'serial' -%}
+    int
+    {% else %}
+    {{ user_id_type }}
+    {% endif %}, group_id_arg uuid
+) is E'Given [user_id] and [group_id], returns boolean indicating if user is member of group. Does not include child-groups as members.';
 
--- alter function {{ private_schema }}.is_member_of owner to {{ owner }};
+alter function {{ private_schema }}.is_member_of owner to {{ owner }};
 
--- grant execute on function {{ private_schema }}.is_member_of to {{ authenticated_roles|join(', ') }};
+grant execute on function {{ private_schema }}.is_member_of to {{ authenticated_roles|join(', ') }};
 
 
 -- reduce_permissions
