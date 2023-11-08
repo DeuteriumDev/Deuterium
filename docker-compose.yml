@@ -1,0 +1,27 @@
+# @format
+
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:latest
+    restart: always
+    ports:
+      # external port : internal port
+      - 54322:5432
+    # no volumes, we want a fresh db each time
+    # volumes:
+    #   - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+    networks:
+      - postgres
+
+# volumes:
+#   pgdata:
+
+networks:
+  postgres:
+    driver: bridge

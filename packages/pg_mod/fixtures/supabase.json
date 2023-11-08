@@ -1,0 +1,11 @@
+{
+  "private_schema": "private",
+  "public_schema": "public",
+  "authenticated_roles": ["authenticated"],
+  "owner": "postgres",
+  "include_authenticated_roles": true,
+  "include_timestamps": false,
+  "create_users_table": false,
+  "user_id_type": "uuid",
+  "users_table": "auth.users"
+}
