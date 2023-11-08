@@ -100,6 +100,9 @@ CREATE TABLE {{ users_table }} (
 alter table {{ users_table }} owner to {{ owner }};
 
 alter table {{ users_table }} ENABLE ROW LEVEL SECURITY;
+
+comment on table {{ users_table }} is E'TODO';
+
 {% endif %}
 
 -- group_members
@@ -122,6 +125,8 @@ alter table {{ public_schema }}.group_members ADD CONSTRAINT
 alter table {{ public_schema }}.group_members owner to {{ owner }};
 
 alter table {{ public_schema }}.group_members ENABLE ROW LEVEL SECURITY;
+
+comment on table {{ public_schema }}.group_members is E'TODO';
 
 -- document_permissions
 create table {{ public_schema }}.document_permissions (
@@ -148,3 +153,4 @@ alter table {{ public_schema }}.document_permissions owner to {{ owner }};
 
 alter table {{ public_schema }}.document_permissions ENABLE ROW LEVEL SECURITY;
 
+comment on table {{ public_schema }}.document_permissions is E'TODO';
