@@ -1,6 +1,4 @@
 #!make
-include .env
-export
 
 install: ## Install pre-req software
 	@pip3 install j2cli
@@ -19,10 +17,14 @@ help: ## Show this help
 .PHONY: help
 
 reset: ## Reset local DB
+	include .env
+	export
 	@./scripts/compile_sql.sh templates/extra/cleanup.sql fixtures/postgres.json | psql $(DB_CONNECTION) > _reset.txt 2>&1
 .PHONY: reset
 
 load: reset ## Load local db
+	include .env
+	export
 	@./scripts/compile_sql.sh templates/frameworks/postgres.sql fixtures/postgres.json | psql $(DB_CONNECTION) > _load.txt 2>&1
 .PHONY: load
 
