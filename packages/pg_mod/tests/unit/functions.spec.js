@@ -23,6 +23,7 @@ describe('functions.sql', () => {
     await fileLoader('templates/core/schemas.sql', 'fixtures/postgres.json');
     await fileLoader('templates/core/tables.sql', 'fixtures/postgres.json');
     await fileLoader('templates/core/functions.sql', 'fixtures/postgres.json');
+    await fileLoader('templates/core/views.sql', 'fixtures/postgres.json');
   }, 15000);
 
   afterAll(() => {
