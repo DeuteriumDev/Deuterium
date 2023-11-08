@@ -8,9 +8,9 @@ if [[ "${TRACE-0}" == "1" ]]; then
 fi
 
 if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
-    echo 'Usage: ./compile_sql.sh <sql file> <data file>
+    echo 'Usage: ./compile_sql.sh <sql_file> <data_file>
 
-Template sql w/ [jinja](), and format w/ [sql-formatter]() given file with provided data
+Template [sql_file] w/ [jinja](), and format w/ [sql-formatter]() given [data_file]
 
 '
     exit
@@ -31,7 +31,7 @@ fi
 # cd "$(dirname "$1")"
 
 main() {
-  j2 $1 $2 | npx sql-formatter --config ./.sqlformaterrc
+    j2 $1 $2 | npx sql-formatter --config ./.sqlformaterrc
 }
 
 main "$@"
