@@ -66,10 +66,10 @@ comment on table {{ public_schema }}.groups is E'Groups to organize our users in
 -- group_permissions
 create table {{ public_schema }}.group_permissions (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    can_create boolean default true,
-    can_read boolean default true,
-    can_update boolean default true,
-    can_delete boolean default true,
+    can_create boolean default true not null,
+    can_read boolean default true not null,
+    can_update boolean default true not null,
+    can_delete boolean default true not null,
     {% if include_timestamps %}
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -135,10 +135,10 @@ create table {{ public_schema }}.document_permissions (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     {% endif %}
-    can_create boolean default true,
-    can_read boolean default true,
-    can_update boolean default true,
-    can_delete boolean default true,
+    can_create boolean default true not null,
+    can_read boolean default true not null,
+    can_update boolean default true not null,
+    can_delete boolean default true not null,
     document_id uuid,
     group_id uuid NOT NULL
 );
