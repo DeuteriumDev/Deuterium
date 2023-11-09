@@ -91,14 +91,14 @@ CREATE POLICY {{ public_schema }}_document_permissions_delete ON {{ public_schem
 /*
 Group_members RLS
 
-- Group members can only be "Created" or "Deleted".
+Group members can only be "Created" or "Deleted".
 - Read access is determined via crud permissions such that it's possible to make "hidden" groups.
 */
 ALTER TABLE {{ public_schema }}.group_members ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY {{ public_schema }}_group_members_create ON {{ public_schema }}.group_members for insert to {{ authenticated_roles|join(', ') }} with check (
     group_id in (
-        select gp.owner_group_id
+        select gp.target_group_id as group_id
         from {{ public_schema }}.group_permissions gp
         where gp.can_create = true and {{ private_schema }}.is_member_of({{ private_schema }}.get_user_id(), gp.owner_group_id)
     )
@@ -106,7 +106,7 @@ CREATE POLICY {{ public_schema }}_group_members_create ON {{ public_schema }}.gr
 
 CREATE POLICY {{ public_schema }}_group_members_read ON {{ public_schema }}.group_members for select to {{ authenticated_roles|join(', ') }} USING (
     group_id in (
-        select gp.owner_group_id
+        select gp.target_group_id  as group_id
         from {{ public_schema }}.group_permissions gp
         where gp.can_read = true and {{ private_schema }}.is_member_of({{ private_schema }}.get_user_id(), gp.owner_group_id)
     )
@@ -119,7 +119,7 @@ CREATE POLICY {{ private_schema }}_group_members_update ON {{ private_schema }}.
 
 CREATE POLICY {{ public_schema }}_group_members_delete ON {{ public_schema }}.group_members for delete to {{ authenticated_roles|join(', ') }} USING (
     group_id in (
-        select gp.owner_group_id
+        select gp.target_group_id  as group_id
         from {{ public_schema }}.group_permissions gp
         where gp.can_delete = true and {{ private_schema }}.is_member_of({{ private_schema }}.get_user_id(), gp.owner_group_id)
     )
@@ -131,10 +131,16 @@ Groups RLS
 
 Groups permissions are direct grants only, and do not inherit from their parents. The reason for this is because groups serve to track relationships, not actual documents.
 Each sub-group is a new relationship, and therefore should include new permissions.
+
+If you belong to the [owner_group], then you get the following permissions' on the [target_group]
+- create access -> can add users to [target_group]
+- read access -> can "see" [target_group]
+- update access -> can update [target_group] metadata
+- delete access -> can delete [target_group]
 */
 CREATE POLICY {{ public_schema }}_groups_create ON {{ public_schema }}.groups for insert to {{ authenticated_roles|join(', ') }} with check (
     parent_id is null or parent_id in (
-        select gp.owner_group_id
+        select gp.target_group_id as group_id
         from {{ public_schema }}.group_permissions gp
         where gp.can_create = true and {{ private_schema }}.is_member_of({{ private_schema }}.get_user_id(), gp.owner_group_id)
     )
@@ -142,7 +148,7 @@ CREATE POLICY {{ public_schema }}_groups_create ON {{ public_schema }}.groups fo
 
 CREATE POLICY {{ public_schema }}_groups_read ON {{ public_schema }}.group_members for select to {{ authenticated_roles|join(', ') }} USING (
     group_id in (
-        select gp.owner_group_id
+        select gp.target_group_id as group_id
         from {{ public_schema }}.group_permissions gp
         where gp.can_read = true and {{ private_schema }}.is_member_of({{ private_schema }}.get_user_id(), gp.owner_group_id)
     )
@@ -150,7 +156,7 @@ CREATE POLICY {{ public_schema }}_groups_read ON {{ public_schema }}.group_membe
 
 CREATE POLICY {{ public_schema }}_groups_update ON {{ public_schema }}.group_members for update to {{ authenticated_roles|join(', ') }} USING (
     group_id in (
-        select gp.owner_group_id
+        select gp.target_group_id as group_id
         from {{ public_schema }}.group_permissions gp
         where gp.can_update = true and {{ private_schema }}.is_member_of({{ private_schema }}.get_user_id(), gp.owner_group_id)
     )
@@ -158,8 +164,46 @@ CREATE POLICY {{ public_schema }}_groups_update ON {{ public_schema }}.group_mem
 
 CREATE POLICY {{ public_schema }}_groups_delete ON {{ public_schema }}.group_members for delete to {{ authenticated_roles|join(', ') }} USING (
     group_id in (
-        select gp.owner_group_id
+        select gp.target_group_id as group_id
         from {{ public_schema }}.group_permissions gp
         where gp.can_delete = true and {{ private_schema }}.is_member_of({{ private_schema }}.get_user_id(), gp.owner_group_id)
+    )
+);
+
+/*
+Group_permissions RLS
+
+If you belong to the [owner_group], then you get the following permissions' on the [target_group]
+- read access -> can "see" [target_group] permissions
+- update access -> can create, and delete [target_group] permissions
+*/
+
+
+CREATE POLICY {{ public_schema }}_group_permissions_create ON {{ public_schema }}.group_permissions for insert to {{ authenticated_roles|join(', ') }} with check (
+    target_group_id in (
+        select gp.target_group_id
+        from {{ public_schema }}.group_permissions gp
+        where gp.can_update = true and {{ private_schema }}.is_member_of({{ private_schema }}.get_user_id(), gp.owner_group_id)
+    )
+);
+
+CREATE POLICY {{ public_schema }}_group_permissions_read ON {{ public_schema }}.group_permissions for select to {{ authenticated_roles|join(', ') }} using (
+    target_group_id in (
+        select gp.target_group_id
+        from {{ public_schema }}.group_permissions gp
+        where gp.can_read = true and {{ private_schema }}.is_member_of({{ private_schema }}.get_user_id(), gp.owner_group_id)
+    )
+);
+
+-- no "updates", only creates and deletes
+CREATE POLICY {{ public_schema }}_group_permissions_update ON {{ public_schema }}.group_permissions for update to {{ authenticated_roles|join(', ') }} using (
+    false
+);
+
+CREATE POLICY {{ public_schema }}_group_permissions_delete ON {{ public_schema }}.group_permissions for delete to {{ authenticated_roles|join(', ') }} using (
+    target_group_id in (
+        select gp.target_group_id
+        from {{ public_schema }}.group_permissions gp
+        where gp.can_update = true and {{ private_schema }}.is_member_of({{ private_schema }}.get_user_id(), gp.owner_group_id)
     )
 );
