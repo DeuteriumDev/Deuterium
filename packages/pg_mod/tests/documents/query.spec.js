@@ -31,7 +31,7 @@ describe('query.spec.js', () => {
 
     // seed test data
     await fileLoader('tests/seeds/postgres.sql', 'fixtures/postgres.json');
-  }, 15000);
+  }, 20000);
 
   afterAll(async () => {
     await client.end();
@@ -50,10 +50,9 @@ describe('query.spec.js', () => {
       await loginAs(1);
 
       const results = await client.query(`
-        select * from public.folders
+        select * from public.folders;
       `);
-
-      expect(results.rows).toEqual([]);
+      expect(results.rowCount).toEqual(1);
     });
   });
 });

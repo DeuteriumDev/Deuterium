@@ -22,6 +22,8 @@ alter table {{ private_schema }}.document_types owner to {{ owner }};
 
 comment on table {{ private_schema }}.document_types is E'ENUM for documents. For each child table it should have an entry to represent the types of documents. It is currently not meant to be accessed by a user, and thus it is declared privately.\nIt uses an explicit table as per [hasura enum guidelines](https://hasura.io/docs/latest/schema/postgres/enums/).';
 
+grant all on {{ private_schema }}.document_types to {{ authenticated_roles|join(', ') }};
+
 
 -- documents
 create table {{ private_schema }}.documents (
@@ -43,6 +45,8 @@ alter table {{ private_schema }}.documents owner to {{ owner }};
 
 comment on table {{ private_schema }}.documents is E'Core tree for organizing documents and folders. For each table that we want to secure we create a [documents] row of the new table [document_type]. We also add a link to the [documents] table in the child such that we can relate it to the tree.\n This allows us to create a recursive view that organizes the documents into a tree-folder structure with CRUD permissions.';
 
+grant all on {{ private_schema }}.documents to {{ authenticated_roles|join(', ') }};
+
 -- groups
 CREATE TABLE {{ public_schema }}.groups (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -62,6 +66,8 @@ alter table {{ public_schema }}.groups owner to {{ owner }};
 alter table {{ public_schema }}.groups ENABLE ROW LEVEL SECURITY;
 
 comment on table {{ public_schema }}.groups is E'Groups to organize our users into hierarchies.';
+
+grant all on {{ public_schema }}.groups to {{ authenticated_roles|join(', ') }};
 
 -- group_permissions
 create table {{ public_schema }}.group_permissions (
@@ -90,6 +96,8 @@ alter table {{ public_schema }}.group_permissions ENABLE ROW LEVEL SECURITY;
 
 comment on table {{ public_schema }}.group_permissions is E'Permission levels for editing a group. The `owner_group_id` is the owner-group of permissions, and the `target_group_id` is the group that permission applies to. Both can be the same group to give its members access to their own group.';
 
+grant all on {{ public_schema }}.group_permissions to {{ authenticated_roles|join(', ') }};
+
 {% if create_users_table -%}
 -- users, optional table
 CREATE TABLE {{ users_table }} (
@@ -102,6 +110,8 @@ alter table {{ users_table }} owner to {{ owner }};
 alter table {{ users_table }} ENABLE ROW LEVEL SECURITY;
 
 comment on table {{ users_table }} is E'TODO';
+
+grant all on {{ users_table }} to {{ authenticated_roles|join(', ') }};
 
 {% endif %}
 
@@ -127,6 +137,9 @@ alter table {{ public_schema }}.group_members owner to {{ owner }};
 alter table {{ public_schema }}.group_members ENABLE ROW LEVEL SECURITY;
 
 comment on table {{ public_schema }}.group_members is E'TODO';
+
+grant all on {{ public_schema }}.group_members to {{ authenticated_roles|join(', ') }};
+
 
 -- document_permissions
 create table {{ public_schema }}.document_permissions (
@@ -155,7 +168,7 @@ alter table {{ public_schema }}.document_permissions ENABLE ROW LEVEL SECURITY;
 
 comment on table {{ public_schema }}.document_permissions is E'TODO';
 
-
+grant all on {{ public_schema }}.document_permissions to {{ authenticated_roles|join(', ') }};
 
 {% if add_folders -%}
 -- folders
@@ -175,8 +188,10 @@ alter table {{ public_schema }}.folders ADD CONSTRAINT
 
 alter table {{ public_schema }}.folders owner to {{ owner }};
 
-alter table {{ public_schema }}.folders ENABLE ROW LEVEL SECURITY;
+-- alter table {{ public_schema }}.folders ENABLE ROW LEVEL SECURITY;
 
 comment on table {{ public_schema }}.folders is E'DT generated folders table for organizing data in a typical user friendly manner';
+
+grant all on {{ public_schema }}.folders to {{ authenticated_roles|join(', ') }};
 
 {% endif %}

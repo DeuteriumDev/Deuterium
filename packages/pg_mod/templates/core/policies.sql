@@ -235,7 +235,7 @@ CREATE POLICY {{ public_schema }}_folders_read ON {{ public_schema }}.folders FO
     )
 );
 
-CREATE POLICY {{ private_schema }}_folders_update ON {{ private_schema }}.documents FOR update to {{ authenticated_roles|join(', ') }} USING (
+CREATE POLICY {{ private_schema }}_folders_update ON {{ public_schema }}.folders FOR update to {{ authenticated_roles|join(', ') }} USING (
     id in (
         SELECT document_user_permissions.document_id as id
         FROM {{ private_schema }}.document_user_permissions
@@ -244,7 +244,7 @@ CREATE POLICY {{ private_schema }}_folders_update ON {{ private_schema }}.docume
     )
 );
 
-CREATE POLICY {{ private_schema }}_folders_delete ON {{ private_schema }}.documents FOR delete to {{ authenticated_roles|join(', ') }} USING (
+CREATE POLICY {{ private_schema }}_folders_delete ON {{ public_schema }}.folders FOR delete to {{ authenticated_roles|join(', ') }} USING (
     id in (
         SELECT document_user_permissions.document_id as id
         FROM {{ private_schema }}.document_user_permissions
