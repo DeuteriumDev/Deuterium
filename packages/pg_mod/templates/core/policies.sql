@@ -207,3 +207,50 @@ CREATE POLICY {{ public_schema }}_group_permissions_delete ON {{ public_schema }
         where gp.can_update = true and {{ private_schema }}.is_member_of({{ private_schema }}.get_user_id(), gp.owner_group_id)
     )
 );
+
+
+{% if add_folders -%}
+/*
+Folder RLS
+
+Each folder has a foreign key to a document which lets it relate back to the master `document_user_permissions` view.
+
+*/
+
+CREATE POLICY {{ public_schema }}_folders_create ON {{ public_schema }}.folders FOR insert to {{ authenticated_roles|join(', ') }} with check (
+    document_id in (
+        SELECT docp.document_id as document_id
+        FROM {{ private_schema }}.document_user_permissions docp
+        WHERE docp.user_id = {{ private_schema }}.get_user_id()
+            AND docp.crud_permissions[1] = true
+    )
+);
+
+CREATE POLICY {{ public_schema }}_folders_read ON {{ public_schema }}.folders FOR select to {{ authenticated_roles|join(', ') }} USING (
+    id in (
+        SELECT document_user_permissions.document_id as id
+        FROM {{ private_schema }}.document_user_permissions
+        WHERE document_user_permissions.user_id = {{ private_schema }}.get_user_id()
+            AND document_user_permissions.crud_permissions[2] = true
+    )
+);
+
+CREATE POLICY {{ private_schema }}_folders_update ON {{ private_schema }}.documents FOR update to {{ authenticated_roles|join(', ') }} USING (
+    id in (
+        SELECT document_user_permissions.document_id as id
+        FROM {{ private_schema }}.document_user_permissions
+        WHERE document_user_permissions.user_id = {{ private_schema }}.get_user_id()
+            AND document_user_permissions.crud_permissions[3] = true
+    )
+);
+
+CREATE POLICY {{ private_schema }}_folders_delete ON {{ private_schema }}.documents FOR delete to {{ authenticated_roles|join(', ') }} USING (
+    id in (
+        SELECT document_user_permissions.document_id as id
+        FROM {{ private_schema }}.document_user_permissions
+        WHERE document_user_permissions.user_id = {{ private_schema }}.get_user_id()
+            AND document_user_permissions.crud_permissions[4] = true
+    )
+);
+
+{% endif %}

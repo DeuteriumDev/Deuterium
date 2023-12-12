@@ -154,3 +154,29 @@ alter table {{ public_schema }}.document_permissions owner to {{ owner }};
 alter table {{ public_schema }}.document_permissions ENABLE ROW LEVEL SECURITY;
 
 comment on table {{ public_schema }}.document_permissions is E'TODO';
+
+
+
+{% if add_folders -%}
+-- folders
+create table {{ public_schema }}.folders (
+    id uuid DEFAULT gen_random_uuid() primary key,
+    document_id uuid unique,
+    {% if include_timestamps %}
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    {% endif %}
+    name text,
+    description text
+);
+
+alter table {{ public_schema }}.folders ADD CONSTRAINT
+    folders_document_id_fkey FOREIGN KEY (document_id) REFERENCES {{ private_schema }}.documents;
+
+alter table {{ public_schema }}.folders owner to {{ owner }};
+
+alter table {{ public_schema }}.folders ENABLE ROW LEVEL SECURITY;
+
+comment on table {{ public_schema }}.folders is E'DT generated folders table for organizing data in a typical user friendly manner';
+
+{% endif %}

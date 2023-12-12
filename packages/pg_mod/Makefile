@@ -6,6 +6,7 @@ install: ## Install pre-req software
 .PHONY: install
 
 builds: ## Build all available framework migrations according to the basic data
+	@clear
 	@./scripts/compile_sql.sh templates/frameworks/postgres.sql fixtures/postgres.json > ./builds/postgres.sql
 	@./scripts/compile_sql.sh templates/frameworks/supabase.sql fixtures/supabase.json > ./builds/supabase.sql
 .PHONY: builds
@@ -17,17 +18,19 @@ help: ## Show this help
 .PHONY: help
 
 reset: ## Reset local DB
+	@clear
 	include .env
 	export
 	@./scripts/compile_sql.sh templates/extra/cleanup.sql fixtures/postgres.json | psql $(DB_CONNECTION) > _reset.txt 2>&1
 .PHONY: reset
 
 load: reset ## Load local db
+	@clear
 	include .env
 	export
 	@./scripts/compile_sql.sh templates/frameworks/postgres.sql fixtures/postgres.json | psql $(DB_CONNECTION) > _load.txt 2>&1
 .PHONY: load
 
 tests: ## Run available tests
-	@yarn jest tests/unit/functions.spec.js --detectOpenHandles
+	@clear
 .PHONY: tests

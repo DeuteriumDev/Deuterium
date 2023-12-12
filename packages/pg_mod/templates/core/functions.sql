@@ -26,7 +26,7 @@ grant execute on function function {{ private_schema }}.<snake_case_name> to {{ 
 
 -- get_user_id
 create or replace function {{ private_schema }}.get_user_id() returns int as $$
-  select 1
+  select nullif(current_setting('bt.user_id', true), '')::int
 $$ language sql stable;
 
 comment on function {{ private_schema }}.get_user_id() is E'**Needs to be overridden by framework** Returns framework user id.';

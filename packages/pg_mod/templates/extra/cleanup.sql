@@ -1,3 +1,13 @@
+
+drop policy if exists {{ private_schema }}_documents_create ON {{ private_schema }}.documents;
+drop policy if exists {{ private_schema }}_documents_read ON {{ private_schema }}.documents;
+drop policy if exists {{ private_schema }}_documents_update ON {{ private_schema }}.documents;
+drop policy if exists {{ private_schema }}_documents_delete ON {{ private_schema }}.documents;
+
+{% if add_folders -%}
+drop table if exists {{ public_schema }}.folders;
+{% endif %}
+
 drop view if exists {{ private_schema }}.document_user_permissions cascade;
 
 drop function if exists {{ private_schema }}.reduce_permissions(
@@ -29,5 +39,3 @@ drop schema if exists {{ private_schema }} cascade;
 drop role if exists {{ role }};
 {% endfor %}
 {% endif %}
-
-
