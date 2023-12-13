@@ -192,4 +192,6 @@ comment on table {{ public_schema }}.folders is E'DT generated folders table for
 
 grant all on {{ public_schema }}.folders to {{ authenticated_roles|join(', ') }};
 
+insert into {{ private_schema }}.document_types values ('folder', null);
+
 {% endif %}

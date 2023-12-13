@@ -30,7 +30,7 @@ describe('query.spec.js', () => {
         'templates/core/functions.sql',
         'templates/core/views.sql',
         'templates/core/policies.sql',
-        'tests/seeds/postgres.sql',
+        'tests/seeds/postgres_seed.sql',
       ],
       'fixtures/postgres.json'
     );
