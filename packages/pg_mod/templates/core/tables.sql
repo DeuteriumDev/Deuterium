@@ -188,8 +188,6 @@ alter table {{ public_schema }}.folders ADD CONSTRAINT
 
 alter table {{ public_schema }}.folders owner to {{ owner }};
 
--- alter table {{ public_schema }}.folders ENABLE ROW LEVEL SECURITY;
-
 comment on table {{ public_schema }}.folders is E'DT generated folders table for organizing data in a typical user friendly manner';
 
 grant all on {{ public_schema }}.folders to {{ authenticated_roles|join(', ') }};

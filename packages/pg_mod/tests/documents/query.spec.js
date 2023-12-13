@@ -21,16 +21,19 @@ describe('query.spec.js', () => {
     await client.connect();
 
     // setup db
-    await fileLoader('templates/extra/cleanup.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/roles.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/schemas.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/tables.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/functions.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/views.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/policies.sql', 'fixtures/postgres.json');
-
-    // seed test data
-    await fileLoader('tests/seeds/postgres.sql', 'fixtures/postgres.json');
+    await fileLoader(
+      [
+        'templates/extra/cleanup.sql',
+        'templates/core/roles.sql',
+        'templates/core/schemas.sql',
+        'templates/core/tables.sql',
+        'templates/core/functions.sql',
+        'templates/core/views.sql',
+        'templates/core/policies.sql',
+        'tests/seeds/postgres.sql',
+      ],
+      'fixtures/postgres.json'
+    );
   }, 20000);
 
   afterAll(async () => {
@@ -50,9 +53,27 @@ describe('query.spec.js', () => {
       await loginAs(1);
 
       const results = await client.query(`
-        select * from public.folders;
+        select * from folders;
       `);
       expect(results.rowCount).toEqual(1);
+    });
+
+    it('should return a single, specific doc as user#2', async () => {
+      await loginAs(2);
+
+      const results = await client.query(`
+        select * from folders;
+      `);
+      expect(results.rows[0].id).toEqual('d74580e0-a180-4cec-89da-b609e10f6a7d');
+    });
+
+    it('should return no docs as user#3', async () => {
+      await loginAs(3);
+
+      const results = await client.query(`
+        select * from folders;
+      `);
+      expect(results.rowCount).toEqual(0);
     });
   });
 });

@@ -53,3 +53,6 @@ UNION
    FROM ((docs_path_reversed d
      JOIN {{ public_schema }}.document_permissions p ON ((d.permission_id = p.id)))
      JOIN {{ public_schema }}.group_members g ON ((p.group_id = g.group_id)));
+
+
+grant all on  {{ private_schema }}.document_user_permissions to {{ authenticated_roles|join(', ') }};

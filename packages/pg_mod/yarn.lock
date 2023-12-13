@@ -2466,6 +2466,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash@npm:^4.17.21":
+  version: 4.17.21
+  resolution: "lodash@npm:4.17.21"
+  checksum: d8cbea072bb08655bb4c989da418994b073a608dffa608b09ac04b43a791b12aeae7cd7ad919aa4c925f33b48490b5cfe6c1f71d827956071dae2e7bb3a6b74c
+  languageName: node
+  linkType: hard
+
 "lru-cache@npm:^10.0.1, lru-cache@npm:^9.1.1 || ^10.0.0":
   version: 10.0.1
   resolution: "lru-cache@npm:10.0.1"
@@ -2943,6 +2950,7 @@ __metadata:
   dependencies:
     dotenv: "npm:^16.3.1"
     jest: "npm:^29.7.0"
+    lodash: "npm:^4.17.21"
     pg: "npm:^8.11.3"
   languageName: unknown
   linkType: soft
