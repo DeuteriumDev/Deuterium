@@ -33,4 +33,6 @@ load: reset ## Load local db
 
 tests: ## Run available tests
 	@clear
+	@yarn jest tests/unit/functions.spec.js --detectOpenHandles
+	@yarn jest tests/documents/query.spec.js --detectOpenHandles
 .PHONY: tests

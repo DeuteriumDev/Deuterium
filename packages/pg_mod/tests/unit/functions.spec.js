@@ -2,6 +2,7 @@ require('dotenv').config();
 const { Client } = require('pg');
 
 const { fileLoaderBuilder } = require('../utils');
+const { TEST_TIME_OUT } = require('../config');
 
 const client = new Client(process.env.DB_CONNECTION);
 const fileLoader = fileLoaderBuilder(client);
@@ -18,17 +19,37 @@ Steps:
 describe('functions.sql', () => {
   beforeAll(async () => {
     await client.connect();
-    await fileLoader('templates/extra/cleanup.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/roles.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/schemas.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/tables.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/functions.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/views.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/policies.sql', 'fixtures/postgres.json');
-  }, 15000);
 
-  afterAll(() => {
-    client.end();
+    if (process.env.DEBUG) {
+      for (const file of [
+        'templates/extra/cleanup.sql',
+        'templates/core/roles.sql',
+        'templates/core/schemas.sql',
+        'templates/core/tables.sql',
+        'templates/core/functions.sql',
+        'templates/core/views.sql',
+        'templates/core/policies.sql',
+      ]) {
+        await fileLoader(file, 'fixtures/postgres.json');
+      }
+    } else {
+      await fileLoader(
+        [
+          'templates/extra/cleanup.sql',
+          'templates/core/roles.sql',
+          'templates/core/schemas.sql',
+          'templates/core/tables.sql',
+          'templates/core/functions.sql',
+          'templates/core/views.sql',
+          'templates/core/policies.sql',
+        ],
+        'fixtures/postgres.json'
+      );
+    }
+  }, TEST_TIME_OUT);
+
+  afterAll(async () => {
+    await client.end();
   });
 
   beforeEach(async () => {
@@ -64,6 +85,4 @@ describe('functions.sql', () => {
       });
     });
   });
-
-  describe('is_member_of', () => {});
 });

@@ -1,5 +1,6 @@
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
+const _ = require('lodash');
 
 function loginAsBuilder(client) {
   return async (userID) =>
@@ -10,10 +11,18 @@ function loginAsBuilder(client) {
 }
 
 function fileLoaderBuilder(client) {
-  return async (file, data) => {
+  return async (fileArg, dataArg) => {
+    let file = fileArg;
+    let data = dataArg;
     // elevate scope to increase error context
     let sql;
+
     try {
+      if (_.isArray(fileArg)) {
+        file = './tests/_concat.sql';
+        await exec(`cat ${_.join(fileArg, ' ')} > ${file}`);
+      }
+
       const { stdout } = await exec(`./scripts/compile_sql.sh ${file} ${data}`);
       sql = stdout;
       return await client.query(sql);

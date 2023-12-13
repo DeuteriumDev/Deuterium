@@ -1,7 +1,9 @@
 require('dotenv').config();
 const { Client } = require('pg');
+const _ = require('lodash');
 
 const { fileLoaderBuilder, loginAsBuilder } = require('../utils');
+const { TEST_TIME_OUT } = require('../config');
 
 const client = new Client(process.env.DB_CONNECTION);
 const fileLoader = fileLoaderBuilder(client);
@@ -19,10 +21,9 @@ Steps:
 describe('query.spec.js', () => {
   beforeAll(async () => {
     await client.connect();
-
-    // setup db
-    await fileLoader(
-      [
+    // optional 1-at-a-time debugging for isolating a buggy :pirate: template
+    if (process.env.DEBUG) {
+      for (const file of [
         'templates/extra/cleanup.sql',
         'templates/core/roles.sql',
         'templates/core/schemas.sql',
@@ -31,10 +32,25 @@ describe('query.spec.js', () => {
         'templates/core/views.sql',
         'templates/core/policies.sql',
         'tests/seeds/postgres_seed.sql',
-      ],
-      'fixtures/postgres.json'
-    );
-  }, 20000);
+      ]) {
+        await fileLoader(file, 'fixtures/postgres.json');
+      }
+    } else {
+      await fileLoader(
+        [
+          'templates/extra/cleanup.sql',
+          'templates/core/roles.sql',
+          'templates/core/schemas.sql',
+          'templates/core/tables.sql',
+          'templates/core/functions.sql',
+          'templates/core/views.sql',
+          'templates/core/policies.sql',
+          'tests/seeds/postgres_seed.sql',
+        ],
+        'fixtures/postgres.json'
+      );
+    }
+  }, TEST_TIME_OUT);
 
   afterAll(async () => {
     await client.end();
@@ -64,7 +80,9 @@ describe('query.spec.js', () => {
       const results = await client.query(`
         select * from folders;
       `);
-      expect(results.rows[0].id).toEqual('d74580e0-a180-4cec-89da-b609e10f6a7d');
+      expect(results.rows[0].id).toEqual(
+        'd74580e0-a180-4cec-89da-b609e10f6a7d'
+      );
     });
 
     it('should return no docs as user#3', async () => {
