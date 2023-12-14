@@ -1,3 +1,7 @@
+drop trigger if exists {{ public_schema }}_create_folder_setup_trigger on {{ public_schema }}.folders;
+
+drop function if exists {{ private_schema }}.get_default_document_parent();
+drop function if exists {{ private_schema }}.get_default_document_group();
 
 drop policy if exists {{ private_schema }}_documents_create on {{ private_schema }}.documents;
 drop policy if exists {{ private_schema }}_documents_read on {{ private_schema }}.documents;

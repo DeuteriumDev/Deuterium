@@ -40,8 +40,6 @@ alter table {{ private_schema }}.documents ADD CONSTRAINT
 alter table {{ private_schema }}.documents ADD CONSTRAINT
   document_parent_fkey FOREIGN KEY (parent_id) REFERENCES {{ private_schema }}.documents;
 
-alter table {{ private_schema }}.documents ENABLE ROW LEVEL SECURITY;
-
 alter table {{ private_schema }}.documents owner to {{ owner }};
 
 comment on table {{ private_schema }}.documents is E'Core tree for organizing documents and folders. For each table that we want to secure we create a [documents] row of the new table [document_type]. We also add a link to the [documents] table in the child such that we can relate it to the tree.\n This allows us to create a recursive view that organizes the documents into a tree-folder structure with CRUD permissions.';
@@ -63,8 +61,6 @@ alter table {{ public_schema }}.groups ADD CONSTRAINT
   groups_parent_fkey FOREIGN KEY (parent_id) REFERENCES {{ public_schema }}.groups;
 
 alter table {{ public_schema }}.groups owner to {{ owner }};
-
-alter table {{ public_schema }}.groups ENABLE ROW LEVEL SECURITY;
 
 comment on table {{ public_schema }}.groups is E'Groups to organize our users into hierarchies.';
 
@@ -93,8 +89,6 @@ alter table {{ public_schema }}.group_permissions ADD CONSTRAINT
 
 alter table {{ public_schema }}.group_permissions owner to {{ owner }};
 
-alter table {{ public_schema }}.group_permissions ENABLE ROW LEVEL SECURITY;
-
 comment on table {{ public_schema }}.group_permissions is E'Permission levels for editing a group. The `owner_group_id` is the owner-group of permissions, and the `target_group_id` is the group that permission applies to. Both can be the same group to give its members access to their own group.';
 
 grant all on {{ public_schema }}.group_permissions to {{ authenticated_roles|join(', ') }};
@@ -108,8 +102,6 @@ CREATE TABLE {{ users_table }} (
 
 alter table {{ users_table }} owner to {{ owner }};
 
-alter table {{ users_table }} ENABLE ROW LEVEL SECURITY;
-
 comment on table {{ users_table }} is E'TODO';
 
 grant all on {{ users_table }} to {{ authenticated_roles|join(', ') }};
@@ -118,13 +110,12 @@ grant all on {{ users_table }} to {{ authenticated_roles|join(', ') }};
 
 -- group_members
 create table {{ public_schema }}.group_members (
-    group_id uuid,
+    group_id uuid not null,
     user_id {% if user_id_type == 'serial' -%}
     int
     {% else %}
     {{ user_id_type }}
-    {% endif %}
-    PRIMARY KEY
+    {% endif %} not null
 );
 
 alter table {{ public_schema }}.group_members ADD CONSTRAINT
@@ -134,8 +125,6 @@ alter table {{ public_schema }}.group_members ADD CONSTRAINT
     group_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES {{ users_table }};
 
 alter table {{ public_schema }}.group_members owner to {{ owner }};
-
-alter table {{ public_schema }}.group_members ENABLE ROW LEVEL SECURITY;
 
 comment on table {{ public_schema }}.group_members is E'TODO';
 
@@ -164,8 +153,6 @@ alter table {{ public_schema }}.document_permissions ADD CONSTRAINT
     group_fkey FOREIGN KEY (group_id) REFERENCES {{ public_schema }}.groups;
 
 alter table {{ public_schema }}.document_permissions owner to {{ owner }};
-
-alter table {{ public_schema }}.document_permissions ENABLE ROW LEVEL SECURITY;
 
 comment on table {{ public_schema }}.document_permissions is E'TODO';
 
