@@ -30,7 +30,8 @@ create table {{ private_schema }}.documents (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     inherit_permissions_from_parent boolean DEFAULT true NOT NULL,
     parent_id uuid,
-    type text
+    type text,
+    foreign_id uuid not null unique
 );
 
 alter table {{ private_schema }}.documents ADD CONSTRAINT
@@ -174,7 +175,6 @@ grant all on {{ public_schema }}.document_permissions to {{ authenticated_roles|
 -- folders
 create table {{ public_schema }}.folders (
     id uuid DEFAULT gen_random_uuid() primary key,
-    document_id uuid unique,
     {% if include_timestamps %}
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -182,9 +182,6 @@ create table {{ public_schema }}.folders (
     name text,
     description text
 );
-
-alter table {{ public_schema }}.folders ADD CONSTRAINT
-    folders_document_id_fkey FOREIGN KEY (document_id) REFERENCES {{ private_schema }}.documents;
 
 alter table {{ public_schema }}.folders owner to {{ owner }};
 
