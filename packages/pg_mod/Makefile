@@ -1,5 +1,8 @@
 #!make
 
+include .env
+export $(shell sed 's/=.*//' .env)
+
 install: ## Install pre-req software
 	@pip3 install j2cli
 	@yarn install --immutable
@@ -7,8 +10,8 @@ install: ## Install pre-req software
 
 builds: ## Build all available framework migrations according to the basic data
 	@clear
-	@./scripts/compile_sql.sh templates/frameworks/postgres.sql fixtures/postgres.json > ./builds/postgres.sql
-	@./scripts/compile_sql.sh templates/frameworks/supabase.sql fixtures/supabase.json > ./builds/supabase.sql
+	@./scripts/compile_sql.sh templates/frameworks/postgres.sql fixtures/postgres.json > ./builds/_postgres.sql
+	@./scripts/compile_sql.sh templates/frameworks/supabase.sql fixtures/supabase.json > ./builds/_supabase.sql
 .PHONY: builds
  
 help: ## Show this help
@@ -19,17 +22,19 @@ help: ## Show this help
 
 reset: ## Reset local DB
 	@clear
-	include .env
-	export
-	@./scripts/compile_sql.sh templates/extra/cleanup.sql fixtures/postgres.json | psql $(DB_CONNECTION) > _reset.txt 2>&1
+	@./scripts/compile_sql.sh templates/extra/cleanup.sql fixtures/postgres.json | psql $(DB_CONNECTION) > ./builds/_reset.txt 2>&1
 .PHONY: reset
 
 load: reset ## Load local db
 	@clear
-	include .env
-	export
-	@./scripts/compile_sql.sh templates/frameworks/postgres.sql fixtures/postgres.json | psql $(DB_CONNECTION) > _load.txt 2>&1
+	@./scripts/compile_sql.sh templates/frameworks/postgres.sql fixtures/postgres.json | psql $(DB_CONNECTION) > ./builds/_load.txt 2>&1
 .PHONY: load
+
+seed: load
+	@clear
+	@./scripts/compile_sql.sh tests/seeds/postgres_seed.sql fixtures/postgres.json | psql $(DB_CONNECTION) > ./builds/_seed.txt 2>&1
+.PHONY: seed
+
 
 tests: ## Run available tests
 	@clear
