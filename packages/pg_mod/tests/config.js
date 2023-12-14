@@ -8,6 +8,7 @@ const TEST_SQL_FILES = [
   'templates/core/functions.sql',
   'templates/core/views.sql',
   'templates/core/policies.sql',
+  'templates/core/triggers.sql',
   'tests/seeds/postgres_seed.sql',
 ];
 
