@@ -18,7 +18,7 @@ Steps:
 - disconnect
 */
 
-describe('query.spec.js', () => {
+describe('mutation.spec.js', () => {
   beforeAll(async () => {
     await client.connect();
     // optional 1-at-a-time debugging for isolating a buggy :pirate: template
@@ -43,35 +43,46 @@ describe('query.spec.js', () => {
     await client.query('rollback;');
   });
 
-  describe('queries', () => {
+  describe('mutations', () => {
     describe('folders', () => {
-      it('should return a single doc as user#1', async () => {
+      it('should allow edit on a folder for user#1', async () => {
         await loginAs(1);
-
         const results = await client.query(`
-          select * from folders;
+          update folders set name = 'update-test-1' where id = '770d3c7c-189d-4f5e-9f20-e7c0bd14b584';
         `);
         expect(results.rowCount).toEqual(1);
       });
 
-      it('should return a single, specific doc as user#2', async () => {
+      it('should not allow edit on a folder from another group for user#2', async () => {
         await loginAs(2);
-
         const results = await client.query(`
-          select * from folders;
-        `);
-        expect(results.rows[0].id).toEqual(
-          'd74580e0-a180-4cec-89da-b609e10f6a7d'
-        );
-      });
-
-      it('should return no docs as user#3', async () => {
-        await loginAs(3);
-
-        const results = await client.query(`
-          select * from folders;
+          update folders set name = 'update-test-1' where id = '770d3c7c-189d-4f5e-9f20-e7c0bd14b584';
         `);
         expect(results.rowCount).toEqual(0);
+      });
+
+      it('should not allow delete on a folder with read,update permissions for user#1', async () => {
+        await loginAs(1);
+        const results = await client.query(`
+          delete from folders where id = '770d3c7c-189d-4f5e-9f20-e7c0bd14b584';
+        `);
+        expect(results.rowCount).toEqual(0);
+      });
+
+      it('should not allow delete on a folder from another group for user#2', async () => {
+        await loginAs(2);
+        const results = await client.query(`
+          delete from folders where id = '770d3c7c-189d-4f5e-9f20-e7c0bd14b584';
+        `);
+        expect(results.rowCount).toEqual(0);
+      });
+
+      it('should allow creating a folder for user#2', async () => {
+        await loginAs(2);
+        const results = await client.query(`
+          insert into folders values ('35c1c4a9-2bde-4ab8-9f6b-6b495696e3a0', 'people 2 folder');
+        `);
+        expect(results.rowCount).toEqual(1);
       });
     });
   });
