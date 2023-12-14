@@ -19,7 +19,7 @@ function fileLoaderBuilder(client) {
 
     try {
       if (_.isArray(fileArg)) {
-        file = './tests/_concat.sql';
+        file = './builds/_concat.sql';
         await exec(`cat ${_.join(fileArg, ' ')} > ${file}`);
       }
 
