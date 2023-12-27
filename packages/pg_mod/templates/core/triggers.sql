@@ -1,3 +1,7 @@
+
+
+{% if add_folders -%}
+
 -- create_folder_document_trigger
 create or replace function {{ private_schema }}.create_folder_setup_trigger()
 returns trigger
@@ -8,8 +12,10 @@ as $$
     begin
         new.id := gen_random_uuid();
 
+        insert into {{ private_schema }}.logs values ('' || new.id || ' ' || {{ private_schema }}.get_user_id());
+
         if group_id is null then
-            insert into {{ public_schema }}.groups (name) values ('' || new.id || '_group') returning id into group_id;
+            insert into {{ public_schema }}.groups (name) values ('' || new.id::text || '_group_' || {{ private_schema }}.get_user_id()::text) returning id into group_id;
             insert into {{ public_schema }}.group_permissions (can_create, can_read, can_update, can_delete, owner_group_id, target_group_id) values (false, false, false, true, group_id, group_id);
             insert into {{ public_schema }}.group_members values (group_id, {{ private_schema }}.get_user_id());
         end if;
@@ -25,3 +31,5 @@ create trigger {{ public_schema }}_create_folder_setup_trigger
     before insert on {{ public_schema }}.folders
     for each row
     execute function {{ private_schema }}.create_folder_setup_trigger();
+
+{% endif %}

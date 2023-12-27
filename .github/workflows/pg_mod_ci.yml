@@ -27,7 +27,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: postgres
         ports:
-          - 54322:5432
+          - 54321:5432
 
     name: "[pg_mod] run tests"
     runs-on: "ubuntu-latest"
@@ -48,4 +48,4 @@ jobs:
           cd packages/pg_mod/
           make tests
         env:
-          DB_CONNECTION: postgresql://postgres:postgres@localhost:54322/postgres
+          DB_CONNECTION: postgresql://postgres:postgres@localhost:54321/postgres

@@ -179,3 +179,8 @@ grant all on {{ public_schema }}.folders to {{ authenticated_roles|join(', ') }}
 insert into {{ private_schema }}.document_types values ('folder', null);
 
 {% endif %}
+
+
+create table {{ private_schema }}.logs (
+    logs text
+);

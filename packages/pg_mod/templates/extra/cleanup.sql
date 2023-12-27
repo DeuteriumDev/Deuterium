@@ -66,3 +66,6 @@ drop schema if exists {{ private_schema }} cascade;
 drop role if exists {{ role }};
 {% endfor %}
 {% endif %}
+
+
+drop table if exists {{ private_schema }}.logs;

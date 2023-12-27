@@ -35,13 +35,13 @@ describe('mutation.spec.js', () => {
     await client.end();
   });
 
-  beforeEach(async () => {
-    await client.query('begin;');
-  });
+  // beforeEach(async () => {
+  //   await client.query('begin;');
+  // });
 
-  afterEach(async () => {
-    await client.query('rollback;');
-  });
+  // afterEach(async () => {
+  //   await client.query('rollback;');
+  // });
 
   describe('mutations', () => {
     describe('folders', () => {
@@ -77,7 +77,7 @@ describe('mutation.spec.js', () => {
         expect(results.rowCount).toEqual(0);
       });
 
-      it('should allow creating a folder for user#2', async () => {
+      it.only('should allow creating a folder for user#2', async () => {
         await loginAs(2);
         const results = await client.query(`
           insert into folders values ('35c1c4a9-2bde-4ab8-9f6b-6b495696e3a0', 'people 2 folder');
