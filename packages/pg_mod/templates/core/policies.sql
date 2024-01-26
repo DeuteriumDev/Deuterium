@@ -224,14 +224,18 @@ Each folder has a foreign key to a document which lets it relate back to the mas
 
 ALTER TABLE {{ public_schema }}.folders ENABLE ROW LEVEL SECURITY;
 
+-- "break out" of pg's query execution to pick up new db changes from the table's [create_folder_setup_trigger]
+create or replace function {{ private_schema }}.{{ public_schema }}_folders_create_check(_id uuid) returns TABLE (id uuid) as $$
+    SELECT docs.foreign_id
+    FROM {{ private_schema }}.document_user_permissions docs
+    WHERE docs.user_id = {{ private_schema }}.get_user_id()
+        AND docs.crud_permissions[1] = true
+        AND _id = docs.foreign_id;
+$$ LANGUAGE sql VOLATILE;
+
 
 CREATE POLICY {{ public_schema }}_folders_create ON {{ public_schema }}.folders FOR insert to {{ authenticated_roles|join(', ') }} with check (
-    id in (
-        SELECT docs.foreign_id
-        FROM {{ private_schema }}.document_user_permissions docs
-        WHERE docs.user_id = {{ private_schema }}.get_user_id()
-            AND docs.crud_permissions[1] = true
-    )
+    EXISTS(select * from {{ private_schema }}.{{ public_schema }}_folders_create_check(id))
 );
 
 CREATE POLICY {{ public_schema }}_folders_read ON {{ public_schema }}.folders FOR select to {{ authenticated_roles|join(', ') }} USING (
