@@ -41,6 +41,7 @@ jobs:
       - name: Install
         run: |
           cd packages/pg_mod/
+          touch .env
           make install
       - name: Tests
         run: |
