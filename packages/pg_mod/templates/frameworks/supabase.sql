@@ -11,3 +11,4 @@ comment on function private.get_user_id () is '**SUPABASE** Returns framework us
 
 {% include 'templates/core/views.sql' %}
 {% include 'templates/core/policies.sql' %}
+{% include 'templates/core/triggers.sql' %}

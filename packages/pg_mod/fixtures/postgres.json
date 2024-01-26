@@ -1,4 +1,5 @@
 {
+  "configuration": "postgres",
   "private_schema": "private",
   "public_schema": "public",
   "authenticated_roles": ["authenticated"],
@@ -7,5 +8,7 @@
   "include_timestamps": false,
   "create_users_table": true,
   "user_id_type": "serial",
-  "users_table": "public.users"
+  "users_table": "public.users",
+  "add_folders": true,
+  "debug": true
 }

@@ -20,7 +20,8 @@ CREATE VIEW {{ private_schema }}.document_user_permissions WITH (security_barrie
             ARRAY[d.id] AS path,
             ARRAY[d.inherit_permissions_from_parent] AS inherit_path,
             ARRAY[ARRAY[p.can_create, p.can_read, p.can_update, p.can_delete]] AS cruds_path,
-            p.id AS permission_id
+            p.id AS permission_id,
+            d.foreign_id
            FROM ({{ private_schema }}.documents d
              LEFT JOIN {{ public_schema }}.document_permissions p ON ((d.id = p.document_id)))
           WHERE (d.parent_id IS NULL)
@@ -30,7 +31,8 @@ CREATE VIEW {{ private_schema }}.document_user_permissions WITH (security_barrie
             (docs.id || d.path) AS path,
             (docs.inherit_permissions_from_parent || d.inherit_path) AS inherit_path,
             (ARRAY[p.can_create, p.can_read, p.can_update, p.can_delete] || d.cruds_path) AS cruds_path,
-            p.id AS permission_id
+            p.id AS permission_id,
+            d.foreign_id
            FROM (({{ private_schema }}.documents docs
              JOIN docs_path_reversed d ON ((docs.parent_id = d.id)))
              LEFT JOIN {{ public_schema }}.document_permissions p ON ((docs.id = p.document_id)))
@@ -39,7 +41,8 @@ CREATE VIEW {{ private_schema }}.document_user_permissions WITH (security_barrie
     d.depth,
     g.user_id,
     {{ private_schema }}.reduce_permissions(d.inherit_path, d.cruds_path) AS crud_permissions,
-    d.path
+    d.path,
+    d.foreign_id
    FROM ((docs_path_reversed d
      JOIN {{ public_schema }}.document_permissions p ON ((array_position(d.path, p.document_id) > 0)))
      JOIN {{ public_schema }}.group_members g ON ((p.group_id = g.group_id)))
@@ -49,7 +52,11 @@ UNION
     d.depth,
     g.user_id,
     {{ private_schema }}.reduce_permissions(d.inherit_path, d.cruds_path) AS crud_permissions,
-    d.path
+    d.path,
+    d.foreign_id
    FROM ((docs_path_reversed d
      JOIN {{ public_schema }}.document_permissions p ON ((d.permission_id = p.id)))
      JOIN {{ public_schema }}.group_members g ON ((p.group_id = g.group_id)));
+
+
+grant all on  {{ private_schema }}.document_user_permissions to {{ authenticated_roles|join(', ') }};

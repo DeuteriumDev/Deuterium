@@ -1,10 +1,12 @@
 require('dotenv').config();
 const { Client } = require('pg');
 
-const { fileLoaderBuilder } = require('../utils');
+const { fileLoaderBuilder, loginAsBuilder } = require('../utils');
+const { TEST_TIME_OUT, TEST_SQL_FILES } = require('../config');
 
 const client = new Client(process.env.DB_CONNECTION);
 const fileLoader = fileLoaderBuilder(client);
+const loginAs = loginAsBuilder(client);
 
 /*
 Steps:
@@ -18,17 +20,18 @@ Steps:
 describe('functions.sql', () => {
   beforeAll(async () => {
     await client.connect();
-    await fileLoader('templates/extra/cleanup.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/roles.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/schemas.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/tables.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/functions.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/views.sql', 'fixtures/postgres.json');
-    await fileLoader('templates/core/policies.sql', 'fixtures/postgres.json');
-  }, 15000);
 
-  afterAll(() => {
-    client.end();
+    if (process.env.DEBUG) {
+      for (const file of TEST_SQL_FILES) {
+        await fileLoader(file, 'fixtures/postgres.json');
+      }
+    } else {
+      await fileLoader(TEST_SQL_FILES, 'fixtures/postgres.json');
+    }
+  }, TEST_TIME_OUT);
+
+  afterAll(async () => {
+    await client.end();
   });
 
   beforeEach(async () => {
@@ -65,5 +68,21 @@ describe('functions.sql', () => {
     });
   });
 
-  describe('is_member_of', () => {});
+  describe('get_user_id', () => {
+    it(`should return user#1`, async () => {
+      await loginAs(1);
+      const results = await client.query(`
+        select private.get_user_id();
+      `);
+      expect(results.rows[0].get_user_id).toEqual(1);
+    });
+
+    it(`should return user#2`, async () => {
+      await loginAs(2);
+      const results = await client.query(`
+        select private.get_user_id();
+      `);
+      expect(results.rows[0].get_user_id).toEqual(2);
+    });
+  });
 });

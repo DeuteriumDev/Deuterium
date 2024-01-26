@@ -26,7 +26,7 @@ grant execute on function function {{ private_schema }}.<snake_case_name> to {{ 
 
 -- get_user_id
 create or replace function {{ private_schema }}.get_user_id() returns int as $$
-  select 1
+  select current_setting('dt.user_id', true)::int
 $$ language sql stable;
 
 comment on function {{ private_schema }}.get_user_id() is E'**Needs to be overridden by framework** Returns framework user id.';
@@ -85,3 +85,28 @@ comment on function {{ private_schema }}.reduce_permissions(
 alter function {{ private_schema }}.reduce_permissions owner to {{ owner }};
 
 grant execute on function {{ private_schema }}.reduce_permissions to {{ authenticated_roles|join(', ') }};
+
+-- get_default_document_parent
+create or replace function {{ private_schema }}.get_default_document_parent()
+returns uuid as $$
+  select current_setting('dt.default_document_parent', true)::uuid
+$$ language sql;
+
+comment on function {{ private_schema }}.get_default_document_parent() is E'Optionally use the default document parent. See []() for details.';
+
+alter function {{ private_schema }}.get_default_document_parent owner to {{ owner }};
+
+grant execute on function {{ private_schema }}.get_default_document_parent to {{ authenticated_roles|join(', ') }};
+
+-- get_default_document_group
+create or replace function {{ private_schema }}.get_default_document_group()
+returns uuid as $$
+  select current_setting('dt.default_document_group', true)::uuid
+$$ language sql;
+
+comment on function {{ private_schema }}.get_default_document_group() is E'Optionally use the default document group. See []() for details.';
+
+alter function {{ private_schema }}.get_default_document_group owner to {{ owner }};
+
+grant execute on function {{ private_schema }}.get_default_document_group to {{ authenticated_roles|join(', ') }};
+
