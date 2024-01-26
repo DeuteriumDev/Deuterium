@@ -42,6 +42,8 @@ jobs:
         run: |
           cd packages/pg_mod/
           touch .env
+          corepack enable
+          jq ".packageManager" package.json | corepack prepare --activate
           make install
       - name: Tests
         run: |
