@@ -3,6 +3,7 @@
 name: "[pg_mod] CI"
 env:
   CI: true
+  TERM: xterm
 
 on:
   workflow_dispatch:
