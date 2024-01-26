@@ -1,6 +1,8 @@
 # @format
 
 name: "[pg_mod] CI"
+env:
+  CI: true
 
 on:
   workflow_dispatch:
