@@ -6,7 +6,7 @@ function loginAsBuilder(client) {
   return async (userID) =>
     await client.query(`
       set local role authenticated;
-      set local dt.user_id to '${userID}';
+      set local dt.user_id to ${userID};
     `); // cant use params in a multi-query command
 }
 

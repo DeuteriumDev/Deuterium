@@ -80,7 +80,7 @@ describe('mutation.spec.js', () => {
       it('should allow creating a folder for user#2', async () => {
         await loginAs(2);
         const results = await client.query(`
-          insert into folders values ('35c1c4a9-2bde-4ab8-9f6b-6b495696e3a0', 'people 2 folder');
+          insert into folders (name, description) values ('people 2 folder', 'desc');
         `);
         expect(results.rowCount).toEqual(1);
       });

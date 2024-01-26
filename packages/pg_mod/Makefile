@@ -40,4 +40,5 @@ tests: ## Run available tests
 	@clear
 	@yarn jest tests/unit/functions.spec.js --detectOpenHandles
 	@yarn jest tests/documents/query.spec.js --detectOpenHandles
+	@yarn jest tests/documents/mutation.spec.js --detectOpenHandles
 .PHONY: tests

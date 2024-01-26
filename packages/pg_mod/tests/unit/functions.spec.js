@@ -1,11 +1,12 @@
 require('dotenv').config();
 const { Client } = require('pg');
 
-const { fileLoaderBuilder } = require('../utils');
+const { fileLoaderBuilder, loginAsBuilder } = require('../utils');
 const { TEST_TIME_OUT, TEST_SQL_FILES } = require('../config');
 
 const client = new Client(process.env.DB_CONNECTION);
 const fileLoader = fileLoaderBuilder(client);
+const loginAs = loginAsBuilder(client);
 
 /*
 Steps:
@@ -64,6 +65,24 @@ describe('functions.sql', () => {
         `);
         expect(results.rows[0].reduce_permissions).toEqual(perm.output);
       });
+    });
+  });
+
+  describe('get_user_id', () => {
+    it(`should return user#1`, async () => {
+      await loginAs(1);
+      const results = await client.query(`
+        select private.get_user_id();
+      `);
+      expect(results.rows[0].get_user_id).toEqual(1);
+    });
+
+    it(`should return user#2`, async () => {
+      await loginAs(2);
+      const results = await client.query(`
+        select private.get_user_id();
+      `);
+      expect(results.rows[0].get_user_id).toEqual(2);
     });
   });
 });
