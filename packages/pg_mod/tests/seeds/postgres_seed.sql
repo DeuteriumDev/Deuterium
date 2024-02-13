@@ -3,8 +3,6 @@
 alter table {{ public_schema }}.folders disable trigger all;
 {% endif %}
 
-insert into {{ private_schema }}.document_types values ('test', 'test document type');
-
 insert into {{ public_schema }}.groups values ('f2b2e738-c43f-41d6-8ee5-02606a09464f', 'test group 1', null);
 insert into {{ public_schema }}.groups values ('99ec64b9-486b-4fff-b7dd-28c31c6d5b18', 'test group 2', null);
 
@@ -26,5 +24,7 @@ insert into {{ public_schema }}.document_permissions values ('7f3c25ba-799d-40b1
 insert into {{ public_schema }}.document_permissions values ('81f02df8-1e2e-433f-8c5d-2054852e5dcc', true, true, false, true, 'c8ce6a26-707f-43c8-9e43-b717a994a5c2', '99ec64b9-486b-4fff-b7dd-28c31c6d5b18');
 
 {% if add_folders -%}
+insert into {{ private_schema }}.document_types values ('folder', null);
+
 alter table {{ public_schema }}.folders enable trigger all;
 {% endif %}
