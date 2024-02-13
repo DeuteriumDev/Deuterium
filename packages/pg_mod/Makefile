@@ -20,17 +20,16 @@ help: ## Show this help
 	@echo ""
 .PHONY: help
 
-reset: ## Reset local DB
+reset: ## Reset local DB to bare installation
 	@clear
 	@./scripts/compile_sql.sh templates/extra/cleanup.sql fixtures/postgres.json | psql $(DB_CONNECTION) > ./builds/_reset.txt 2>&1
 .PHONY: reset
 
-load: reset ## Load local db
-	@clear
+load: reset ## Reset, then Load the postgres-fixture schema into the local db
 	@./scripts/compile_sql.sh templates/frameworks/postgres.sql fixtures/postgres.json | psql $(DB_CONNECTION) > ./builds/_load.txt 2>&1
 .PHONY: load
 
-seed: load
+seed: load ## Reset, Load schema, then use "postgres" seed to fil in data
 	@clear
 	@./scripts/compile_sql.sh tests/seeds/postgres_seed.sql fixtures/postgres.json | psql $(DB_CONNECTION) > ./builds/_seed.txt 2>&1
 .PHONY: seed
