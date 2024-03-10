@@ -1,4 +1,5 @@
 #!make
+SHELL:=/bin/bash
 
 include .env
 export $(shell sed 's/=.*//' .env)
@@ -45,29 +46,31 @@ seed-200k: load ## Load the 200k-matrix seed into db
 	@pg_restore -a -d $(DB_CONNECTION) --disable-triggers ./tests/seeds/200k.tar > ./builds/_restore.txt 2>&1
 .PHONY: seed-200k
 
-BENCHMARK_FILE=./builds/_benchmark.json
+BENCHMARK_FILE:="./builds/_$(shell date +"%s")_benchmark.json"
 PERFORMANCE_SQL=./tests/performance/query.sql
+
 benchmark: ## Run query against current db and record the output timming, print avg timming
 	@echo '[' > $(BENCHMARK_FILE)
-	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]["Execution Time"]' >> $(BENCHMARK_FILE)
+	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]' >> $(BENCHMARK_FILE)
 	@echo ',' >> $(BENCHMARK_FILE)
-	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]["Execution Time"]' >> $(BENCHMARK_FILE)
+	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]' >> $(BENCHMARK_FILE)
 	@echo ',' >> $(BENCHMARK_FILE)
-	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]["Execution Time"]' >> $(BENCHMARK_FILE)
+	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]' >> $(BENCHMARK_FILE)
 	@echo ',' >> $(BENCHMARK_FILE)
-	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]["Execution Time"]' >> $(BENCHMARK_FILE)
+	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]' >> $(BENCHMARK_FILE)
 	@echo ',' >> $(BENCHMARK_FILE)
-	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]["Execution Time"]' >> $(BENCHMARK_FILE)
+	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]' >> $(BENCHMARK_FILE)
 	@echo ',' >> $(BENCHMARK_FILE)
-	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]["Execution Time"]' >> $(BENCHMARK_FILE)
+	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]' >> $(BENCHMARK_FILE)
 	@echo ',' >> $(BENCHMARK_FILE)
-	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]["Execution Time"]' >> $(BENCHMARK_FILE)
+	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]' >> $(BENCHMARK_FILE)
 	@echo ',' >> $(BENCHMARK_FILE)
-	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]["Execution Time"]' >> $(BENCHMARK_FILE)
+	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]' >> $(BENCHMARK_FILE)
 	@echo ',' >> $(BENCHMARK_FILE)
-	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]["Execution Time"]' >> $(BENCHMARK_FILE)
+	@psql $(DB_CONNECTION) -1 -A < $(PERFORMANCE_SQL) | sed 's/SET//' | sed 's/QUERY PLAN//' | sed 's/(1 row)//' | tr '\n' ' ' | jq '.[0]' >> $(BENCHMARK_FILE)
 	@echo ']' >> $(BENCHMARK_FILE)
-	@cat $(BENCHMARK_FILE) | jq '. | add/length'
+	@yarn run prettier -w $(BENCHMARK_FILE) --log-level silent
+	@cat $(BENCHMARK_FILE) | jq '[.[]["Execution Time"]] | add/length'
 .PHONY: benchmark
 
 tests: ## Run available tests
