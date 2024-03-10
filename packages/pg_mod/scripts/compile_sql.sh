@@ -31,7 +31,7 @@ fi
 # cd "$(dirname "$1")"
 
 main() {
-    j2 $1 $2 | npx sql-formatter --config ./.sqlformaterrc
+    j2 $1 $2 | yarn run sql-formatter --config ./.sqlformaterrc
 }
 
 main "$@"
