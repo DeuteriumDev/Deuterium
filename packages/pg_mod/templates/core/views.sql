@@ -14,49 +14,58 @@ Each view needs:
 
 -- document_user_permissions
 CREATE VIEW {{ private_schema }}.document_user_permissions WITH (security_barrier='true') AS
- WITH RECURSIVE docs_path_reversed(id, depth, path, inherit_path, cruds_path, permission_id) AS (
-         SELECT d.id,
-            0 AS depth,
-            ARRAY[d.id] AS path,
-            ARRAY[d.inherit_permissions_from_parent] AS inherit_path,
-            ARRAY[ARRAY[p.can_create, p.can_read, p.can_update, p.can_delete]] AS cruds_path,
-            p.id AS permission_id,
-            d.foreign_id
-           FROM ({{ private_schema }}.documents d
-             LEFT JOIN {{ public_schema }}.document_permissions p ON ((d.id = p.document_id)))
-          WHERE (d.parent_id IS NULL)
-        UNION ALL
-         SELECT docs.id,
-            (d.depth + 1),
-            (docs.id || d.path) AS path,
-            (docs.inherit_permissions_from_parent || d.inherit_path) AS inherit_path,
-            (ARRAY[p.can_create, p.can_read, p.can_update, p.can_delete] || d.cruds_path) AS cruds_path,
-            p.id AS permission_id,
-            d.foreign_id
-           FROM (({{ private_schema }}.documents docs
-             JOIN docs_path_reversed d ON ((docs.parent_id = d.id)))
-             LEFT JOIN {{ public_schema }}.document_permissions p ON ((docs.id = p.document_id)))
-        )
- SELECT d.id AS document_id,
-    d.depth,
-    g.user_id,
-    {{ private_schema }}.reduce_permissions(d.inherit_path, d.cruds_path) AS crud_permissions,
-    d.path,
-    d.foreign_id
-   FROM ((docs_path_reversed d
-     JOIN {{ public_schema }}.document_permissions p ON ((array_position(d.path, p.document_id) > 0)))
-     JOIN {{ public_schema }}.group_members g ON ((p.group_id = g.group_id)))
-  WHERE (d.permission_id IS NULL)
-UNION
- SELECT d.id AS document_id,
-    d.depth,
-    g.user_id,
-    {{ private_schema }}.reduce_permissions(d.inherit_path, d.cruds_path) AS crud_permissions,
-    d.path,
-    d.foreign_id
-   FROM ((docs_path_reversed d
-     JOIN {{ public_schema }}.document_permissions p ON ((d.permission_id = p.id)))
-     JOIN {{ public_schema }}.group_members g ON ((p.group_id = g.group_id)));
+  with recursive docs_perms as (
+    select 
+      d.id,
+      d.inherit_permissions_from_parent,
+      d.parent_id,
+      d.type,
+      d.foreign_id,
+      array[p.can_create, p.can_read, p.can_update, p.can_delete] as crud_permissions,
+      g.user_id
+      
+    from private.documents d
+    left join document_permissions p on p.document_id = d.id
+    left join group_members g on g.group_id = p.group_id
+  ), docs_path(document_id, depth, path, inherit_path, type, foreign_id, crud_permissions, user_id) AS (
+    SELECT
+      d.id  as document_id,
+      0 AS depth,
+      ARRAY[d.id] AS path,
+      ARRAY[d.inherit_permissions_from_parent] AS inherit_path,
+      d.type,
+      d.foreign_id,
+      d.crud_permissions,
+      d.user_id
+    FROM docs_perms d
+    WHERE (d.parent_id IS NULL)
+  UNION
+    SELECT
+      docs.id as document_id,
+      (d.depth + 1),
+      (d.path || docs.id) AS path,
+      (d.inherit_path || docs.inherit_permissions_from_parent) AS inherit_path,
+      docs.type,
+      docs.foreign_id,
+      case docs.inherit_permissions_from_parent when true	then
+        array[
+          coalesce(docs.crud_permissions[1], d.crud_permissions[1], false),
+          coalesce(docs.crud_permissions[2], d.crud_permissions[2], false),
+          coalesce(docs.crud_permissions[3], d.crud_permissions[3], false),
+          coalesce(docs.crud_permissions[4], d.crud_permissions[4], false)
+        ]
+      else
+        docs.crud_permissions
+      end as crud_permissions,
+      coalesce(docs.user_id, d.user_id)
+      
+    FROM docs_perms docs
+    JOIN docs_path d ON docs.parent_id = d.document_id
+  )
+  SELECT
+  d.*
+  from docs_path as d;
 
 
-grant all on  {{ private_schema }}.document_user_permissions to {{ authenticated_roles|join(', ') }};
+
+grant select on {{ private_schema }}.document_user_permissions to {{ authenticated_roles|join(', ') }};
