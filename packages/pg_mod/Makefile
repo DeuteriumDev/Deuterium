@@ -7,6 +7,8 @@ export $(shell sed 's/=.*//' .env)
 install: ## Install pre-req software
 	@pip3 install j2cli
 	@yarn install --immutable
+	@brew install gnuplot
+	@brew install sqlfluff
 .PHONY: install
 
 builds: ## Build all available framework migrations according to the basic data
@@ -41,13 +43,16 @@ dump: ## Dump current DB to `out.tar`
 	@pg_dump -a -O -f out.tar -Ft -d $(DB_CONNECTION) > ./builds/_dump.txt 2>&1
 .PHONY: dump
 
-FLAT_SEED=./tests/seeds/200k.tar
+FLAT_SEED=./tests/seeds/postgres_flat_100k_seed.tar
 seed-flat: load ## Load the n*5 flat seed into db
 	@clear
-	@pg_restore -a -d $(DB_CONNECTION) --disable-triggers $(FLAT_SEED) > ./builds/_restore.txt 2>&1
+	@pg_restore -a -d $(DB_CONNECTION) --disable-triggers $(FLAT_SEED) > ./builds/_seed_flat.txt 2>&1
 .PHONY: seed-200k
+
+NESTED_SEED=./tests/seeds/nested_100.tar
+seed-nested: load ## Load the n^3 nested seed into db
 	@clear
-	@pg_restore -a -d $(DB_CONNECTION) --disable-triggers ./tests/seeds/200k.tar > ./builds/_restore.txt 2>&1
+	@pg_restore -a -d $(DB_CONNECTION) --disable-triggers $(NESTED_SEED) > ./builds/_seed_nested.txt 2>&1
 .PHONY: seed-200k
 
 BENCHMARK_NAME=query
