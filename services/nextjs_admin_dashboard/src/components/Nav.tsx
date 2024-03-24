@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import { LucideIcon } from 'lucide-react';
+import _ from 'lodash';
 
 import { cn } from '~/lib/utils';
-import { buttonVariants } from '~/components/Button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/Tooltip';
 
 interface NavProps {
   links: {
@@ -19,7 +18,7 @@ export function Nav({ links }: NavProps) {
   return (
     <div className="flex-1">
       <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-        {links.map((link, index) => (
+        {_.map(links, (link) => (
           <Link
             key={link.title}
             href={link.href}

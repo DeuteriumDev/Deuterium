@@ -10,7 +10,7 @@ import {
 } from '~/components/Toast';
 import { useToast } from '~/lib/useToast';
 
-export function Toaster() {
+export default function Toaster() {
   const { toasts } = useToast();
 
   return (
