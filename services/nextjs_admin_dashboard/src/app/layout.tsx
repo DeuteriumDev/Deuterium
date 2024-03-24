@@ -39,7 +39,7 @@ export default function RootLayout({
                     title: 'Dashboard',
                     icon: Home,
                     variant: 'default',
-                    href: '/',
+                    href: '/dashboard',
                   },
                   {
                     title: 'Groups',
