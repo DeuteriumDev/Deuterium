@@ -3,27 +3,28 @@
 import _ from 'lodash';
 import { Suspense } from 'react';
 
-import DashboardCards, { DASHBOARD_CARDS } from '~/components/DashboardCards';
-import { Skeleton } from '~/components/Skeleton';
-import RecentActivityTable from '~/components/RecentActivityTable';
+import NodeGrowthCards from '~/components/NodeGrowthCards';
 
-export default async function Dashboard() {
+import RecentActivityTable from '~/components/RecentActivityTable';
+import NodeGrowthCardsSkeleton from '~/components/NodeGrowthCardsSkeleton';
+import RecentActivityTableSkeleton from '~/components/RecentActivityTableSkeleton';
+
+interface DashboardProps {
+  searchParams: { page: string };
+}
+export default async function Dashboard(props: DashboardProps) {
+  const {
+    searchParams: { page = 0 },
+  } = props;
+
   return (
     <div>
-      <Suspense
-        fallback={
-          <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-            {_.map(DASHBOARD_CARDS, (c) => (
-              <Skeleton key={c.title} className={`w-44 h-24`} />
-            ))}
-          </div>
-        }
-      >
-        <DashboardCards />
+      <Suspense fallback={<NodeGrowthCardsSkeleton />}>
+        <NodeGrowthCards />
       </Suspense>
-      <div className="pt-10">
-        <RecentActivityTable />
-      </div>
+      <Suspense fallback={<RecentActivityTableSkeleton />}>
+        <RecentActivityTable page={Number(page)} />
+      </Suspense>
     </div>
   );
 }
