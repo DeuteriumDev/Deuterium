@@ -13,6 +13,7 @@ This application is the dev platform for managing database items on a connected 
 - [nextjs](https://nextjs.org/docs) - a React framework for building and maintaining apps
 - [tailwind](https://tailwindcss.com/docs/installation) - a css library for styling
 - [shadcn](https://ui.shadcn.com/docs) - a UI library that downloads components locally from the project's registry
+- [lucide](https://lucide.dev) - the icon library
 - [Cypress](https://docs.cypress.io/api/table-of-contents) - a e2e and component testing lib that runs inside a real browser (TODO: install and setup)
 
 ## Component convention
