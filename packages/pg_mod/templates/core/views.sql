@@ -75,3 +75,99 @@ CREATE VIEW {{ private_schema }}.document_user_permissions WITH (security_barrie
 
 
 grant select on {{ private_schema }}.document_user_permissions to {{ authenticated_roles|join(', ') }};
+
+
+create view {{ public_schema }}.recent_nodes as
+  select * 
+  from (
+      select
+      id::text,
+      email as name,
+      'user' as type,
+      created_at
+    from users
+    union
+    select
+      p.id::text,
+      g.name::text || ' - ' || p.can_create || '-' || p.can_read || '-' || p.can_update || '-' || p.can_delete as name,
+      'permission' as type,
+      p.created_at
+    from document_permissions p
+    join groups g on g.id = p.group_id
+    union
+    select
+      id::text,
+      name,
+      'group' as type,
+      created_at
+    from groups
+    union
+    select
+      f.id::text,
+      f.name,
+      'folder' as type,
+      d.created_at
+    from folders f
+    join private.documents d on d.foreign_id = f.id
+  )
+  order by created_at desc;
+
+grant select on {{ public_schema }}.recent_nodes to {{ authenticated_roles|join(', ') }};
+
+create view {{ public_schema }}.node_growth as 
+  select 
+    total,
+    count_this_month,
+    type
+  from (
+    select
+      count(id) as total,
+      (
+        select
+        count(id) as count_per_month
+        from public.users
+        where extract (month from created_at) = extract (month from now())
+      )	as count_this_month,
+      'users' as type,
+      0 as position
+    from public.users
+    union
+    select
+      count(id) as total,
+      (
+      select
+        count(id) as count_per_month
+      from public.groups
+      where extract (month from created_at) = extract (month from now())
+      )	as count_this_month,
+      'groups' as type,
+      1 as position
+    from public.groups
+    union
+    select
+      count(id) as total,
+      (
+        select
+        count(id) as count_per_month
+        from public.document_permissions
+        where extract (month from created_at) = extract (month from now())
+      )	as count_this_month,
+      'permissions' as type,
+      2 as position
+    from public.document_permissions
+    union
+    select
+      count(id) as total,
+      (
+        select
+        count(id) as count_per_month
+        from private.documents
+        where extract (month from created_at) = extract (month from now())
+      )	as count_this_month,
+      'documents' as type,
+      3 as position
+    from private.documents
+  )
+  order by position;
+
+grant select on {{ public_schema }}.node_growth to {{ authenticated_roles|join(', ') }};

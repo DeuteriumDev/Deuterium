@@ -31,7 +31,8 @@ create table {{ private_schema }}.documents (
     inherit_permissions_from_parent boolean DEFAULT true NOT NULL,
     parent_id uuid,
     type text,
-    foreign_id uuid not null unique
+    foreign_id uuid not null unique,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 alter table {{ private_schema }}.documents ADD CONSTRAINT
@@ -54,7 +55,8 @@ CREATE TABLE {{ public_schema }}.groups (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     {% endif %}
     name text DEFAULT ''::text NOT NULL,
-    parent_id uuid
+    parent_id uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 alter table {{ public_schema }}.groups ADD CONSTRAINT
@@ -97,7 +99,8 @@ grant all on {{ public_schema }}.group_permissions to {{ authenticated_roles|joi
 -- users, optional table
 CREATE TABLE {{ users_table }} (
     id {{ user_id_type }} PRIMARY KEY,
-    email text
+    email text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 alter table {{ users_table }} owner to {{ owner }};
@@ -143,7 +146,8 @@ create table {{ public_schema }}.document_permissions (
     can_update boolean default true not null,
     can_delete boolean default true not null,
     document_id uuid,
-    group_id uuid NOT NULL
+    group_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 alter table {{ public_schema }}.document_permissions ADD CONSTRAINT
