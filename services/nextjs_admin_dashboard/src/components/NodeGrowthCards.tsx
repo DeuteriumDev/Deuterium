@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { User2, Users, Lock, FileText, LucideIcon } from 'lucide-react';
-import postgres, { Sql } from 'postgres';
+import { User2, Users, Lock, FileText } from 'lucide-react';
+import type { Sql } from 'postgres';
 
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/Card';
 import sql from '~/lib/db';
@@ -20,12 +20,12 @@ interface NodeGrowthResult {
   count_this_month: number;
 }
 
-export async function queryNodeGrowths() {
+export async function queryNodeGrowths(client: Sql) {
   let data;
   let errorMessage = null;
 
   try {
-    data = await sql<NodeGrowthResult[]>`
+    data = await client<NodeGrowthResult[]>`
       select *
       from public.node_growth
     `;
@@ -44,7 +44,7 @@ export async function queryNodeGrowths() {
 }
 
 export default async function NodeGrowthCards() {
-  const { data, errorMessage } = await queryNodeGrowths();
+  const { data, errorMessage } = await queryNodeGrowths(sql);
 
   return (
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">

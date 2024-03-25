@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Button from '~/components/Button';
 import { Table, TableBody, TableCell, TableRow } from '~/components/Table';
 import sql from '~/lib/db';
+import type { Sql } from 'postgres';
 
 export type Node = {
   id: string;
@@ -15,40 +16,6 @@ export type Node = {
   createdAt: string;
 };
 
-// const data: Node[] = [
-//   {
-//     id: 'm5gr84i9',
-//     name: 'ken99@yahoo.com',
-//     type: 'user',
-//     createdAt: new Date().toUTCString(),
-//   },
-//   {
-//     id: '3u1reuv4',
-//     name: 'Abe45@gmail.com',
-//     type: 'user',
-//     createdAt: new Date().toUTCString(),
-//   },
-//   {
-//     id: 'derv1ws0',
-//     createdAt: new Date().toUTCString(),
-//     type: 'user',
-//     name: 'Monserrat44@gmail.com',
-//   },
-//   {
-//     id: '5kma53ae',
-//     createdAt: new Date().toUTCString(),
-//     type: 'user',
-//     name: 'Silas22@gmail.com',
-//   },
-//   {
-//     id: 'bhqecj4p',
-//     createdAt: new Date().toUTCString(),
-//     type: 'user',
-//     name: 'carmella@hotmail.com',
-//   },
-// ];
-// const total = data.length;
-
 const PAGE_SIZE = 10;
 const TABLE_COLS = ['name', 'type', 'createdAt'] as (keyof Node)[];
 
@@ -56,18 +23,13 @@ interface RecentActivityTableProps {
   page: number;
 }
 
-async function queryRecentNodes(page: number) {
-  const conn = await sql.reserve();
-  const data = await conn`
+export async function queryRecentNodes(client: Sql, page: number) {
+  const data = await client`
     select *
     from public.recent_nodes
-    ${sql`limit ${PAGE_SIZE}`}
-    ${sql`offset ${page * PAGE_SIZE}`}
+    ${client`limit ${PAGE_SIZE}`}
+    ${client`offset ${page * PAGE_SIZE}`}
   `;
-
-  await conn.release();
-
-  console.log(data);
 
   return {
     data: _.map(data, (d) => ({
@@ -88,8 +50,8 @@ export default async function RecentActivityTable(
   props: RecentActivityTableProps,
 ) {
   const { page = 0 } = props;
-  const { data, total } = await queryRecentNodes(page);
-  
+  const { data, total } = await queryRecentNodes(sql, page);
+
   return (
     <div className="w-full">
       <div className="flex items-center py-4">

@@ -1,6 +1,5 @@
 'use server';
 
-import _ from 'lodash';
 import { Suspense } from 'react';
 
 import NodeGrowthCards from '~/components/NodeGrowthCards';
