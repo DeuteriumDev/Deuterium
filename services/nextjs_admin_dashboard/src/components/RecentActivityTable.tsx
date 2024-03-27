@@ -7,32 +7,31 @@ import Link from 'next/link';
 import Button from '~/components/Button';
 import { Table, TableBody, TableCell, TableRow } from '~/components/Table';
 import sql from '~/lib/db';
-import type { Sql } from 'postgres';
 
 export type Node = {
   id: string;
-  name: React.ReactNode;
+  name: string;
   type: 'user' | 'group' | 'permission' | 'document';
-  createdAt: string;
+  created_at: Date;
 };
 
 const PAGE_SIZE = 10;
-const TABLE_COLS = ['name', 'type', 'createdAt'] as (keyof Node)[];
+const TABLE_COLS = ['name', 'type', 'created_at'] as (keyof Node)[];
 
 interface RecentActivityTableProps {
   page: number;
 }
 
-export async function queryRecentNodes(client: Sql, page: number) {
-  const data = await client`
+export async function queryRecentNodes(client: typeof sql, page: number) {
+  const data = await client<Node>(`
     select *
     from public.recent_nodes
-    ${client`limit ${PAGE_SIZE}`}
-    ${client`offset ${page * PAGE_SIZE}`}
-  `;
+    limit ${PAGE_SIZE}
+    offset ${page * PAGE_SIZE}
+  `);
 
   return {
-    data: _.map(data, (d) => ({
+    data: _.map(data?.rows, (d) => ({
       id: d.id,
       name: (
         <Link href={`/node/${d.type}/${d.id}`} className="underline">
@@ -40,9 +39,9 @@ export async function queryRecentNodes(client: Sql, page: number) {
         </Link>
       ),
       type: d.type,
-      createdAt: (d.created_at as Date).toISOString(),
-    })) as Node[],
-    total: data.length,
+      created_at: d.created_at.toISOString(),
+    })),
+    total: data?.rowCount || 0,
   };
 }
 
