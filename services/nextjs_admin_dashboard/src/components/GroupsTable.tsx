@@ -201,7 +201,7 @@ export default async function GroupsTable(props: GroupsTableProps) {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-error"
                 >
                   {errorMessage}
                 </TableCell>
