@@ -20,8 +20,8 @@ async function sql<Row extends QueryResultRow>(query: string, values?: any[]) {
     client.release();
   }
 
-  if (error) {
-    throw error;
+  if (error && error instanceof Error) {
+    throw new Error(error.message);
   }
 
   return {
