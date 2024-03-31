@@ -77,7 +77,7 @@ CREATE VIEW {{ private_schema }}.document_user_permissions WITH (security_barrie
 grant select on {{ private_schema }}.document_user_permissions to {{ authenticated_roles|join(', ') }};
 
 
-create view {{ public_schema }}.recent_nodes as
+create view {{ public_schema }}.recent_nodes_view as
   select * 
   from (
       select
@@ -112,9 +112,9 @@ create view {{ public_schema }}.recent_nodes as
   )
   order by created_at desc;
 
-grant select on {{ public_schema }}.recent_nodes to {{ authenticated_roles|join(', ') }};
+grant select on {{ public_schema }}.recent_nodes_view to {{ authenticated_roles|join(', ') }};
 
-create view {{ public_schema }}.node_growth as 
+create view {{ public_schema }}.node_growth_view as 
   select 
     total,
     count_this_month,
@@ -170,7 +170,7 @@ create view {{ public_schema }}.node_growth as
   )
   order by position;
 
-grant select on {{ public_schema }}.node_growth to {{ authenticated_roles|join(', ') }};
+grant select on {{ public_schema }}.node_growth_view to {{ authenticated_roles|join(', ') }};
 
 
 create view {{ public_schema }}.document_permissions_view as 
