@@ -4,7 +4,7 @@ import { User2, Users, Lock, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/Card';
 import sql from '~/lib/db';
 
-export const NODE_CARDS_CONFIG = {
+export const NODES_CARDS_CONFIG = {
   users: User2,
   groups: Users,
   permissions: Lock,
@@ -19,7 +19,7 @@ interface NodeGrowthResult {
   count_this_month: number;
 }
 
-export async function queryNodeGrowths(client: typeof sql) {
+export async function queryNodesGrowths(client: typeof sql) {
   let data = null;
   let errorMessage = null;
 
@@ -42,14 +42,14 @@ export async function queryNodeGrowths(client: typeof sql) {
   };
 }
 
-export default async function NodeGrowthCards() {
-  const { data, errorMessage } = await queryNodeGrowths(sql);
+export default async function NodesGrowthCards() {
+  const { data, errorMessage } = await queryNodesGrowths(sql);
 
   return (
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
       {errorMessage && <div>{errorMessage}</div>}
       {_.map(data?.rows, (d) => {
-        const Icon = NODE_CARDS_CONFIG[d.type];
+        const Icon = NODES_CARDS_CONFIG[d.type];
         return (
           <Card key={d.type}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

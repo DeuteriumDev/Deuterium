@@ -18,7 +18,7 @@ export type Node = {
 const PAGE_SIZE = 10;
 const TABLE_COLS = ['name', 'type', 'created_at'] as (keyof Node)[];
 
-interface RecentActivityTableProps {
+interface NodesRecentActivityTableProps {
   page: number;
 }
 
@@ -34,7 +34,7 @@ export async function queryRecentNodes(client: typeof sql, page: number) {
     data: _.map(data?.rows, (d) => ({
       id: d.id,
       name: (
-        <Link href={`/node/${d.type}/${d.id}`} className="underline">
+        <Link href={`/nodes/${d.type}s/${d.id}`} className="underline">
           {d.name}
         </Link>
       ),
@@ -45,8 +45,8 @@ export async function queryRecentNodes(client: typeof sql, page: number) {
   };
 }
 
-export default async function RecentActivityTable(
-  props: RecentActivityTableProps,
+export default async function NodesRecentActivityTable(
+  props: NodesRecentActivityTableProps,
 ) {
   const { page = 0 } = props;
   const { data, total } = await queryRecentNodes(sql, page);
