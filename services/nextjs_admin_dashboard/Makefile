@@ -15,5 +15,5 @@ help: ## Show this help
 .PHONY: help
 
 dev: ## startup the app
-	@yarn dev
+	@DEBUG=true yarn dev
 .PHONY: dev
