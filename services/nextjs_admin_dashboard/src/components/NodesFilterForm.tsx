@@ -7,11 +7,11 @@ import Input from '~/components/Input';
 import Button from '~/components/Button';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-interface GroupsFilterFormProps {
+interface NodesFilterFormProps {
   query: Record<string, string | string[] | number> & { where: string };
 }
 
-export default function GroupsFilterForm(props: GroupsFilterFormProps) {
+export default function NodesFilterForm(props: NodesFilterFormProps) {
   const { query } = props;
   const [where, setWhere] = useState<string>(query.where);
   const router = useRouter();

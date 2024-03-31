@@ -191,3 +191,15 @@ create view {{ public_schema }}.document_permissions_view as
 
 grant select on {{ public_schema }}.document_permissions_view to {{ authenticated_roles|join(', ') }};
 
+
+create view {{ public_schema }}.documents_view as 
+  select 
+    d.id,
+    f.name as name,
+    d.created_at,
+    d.type as type
+  from private.documents d
+  left join public.folders f on f.id = d.foreign_id;
+
+grant select on {{ public_schema }}.documents_view to {{ authenticated_roles|join(', ') }};
+
