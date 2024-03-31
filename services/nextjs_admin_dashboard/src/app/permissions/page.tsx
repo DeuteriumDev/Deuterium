@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import { Suspense } from 'react';
-import GroupsTable from '~/components/GroupsTable';
+import PermissionsTable from '~/components/PermissionsTable';
 import TableSkeleton from '~/components/TableSkeleton';
 
-interface GroupPageProps {
+interface PermissionsPageProps {
   searchParams: {
     page: string;
     hiddenColumns: string[];
@@ -12,7 +12,7 @@ interface GroupPageProps {
     where: string;
   };
 }
-export default function Groups(props: GroupPageProps) {
+export default function Permissions(props: PermissionsPageProps) {
   const {
     searchParams: {
       page = 0,
@@ -24,9 +24,9 @@ export default function Groups(props: GroupPageProps) {
   } = props;
   return (
     <div>
-      <h2 className="ml-1 text-2xl font-bold tracking-tight">Groups</h2>
+      <h2 className="ml-1 text-2xl font-bold tracking-tight">Permissions</h2>
       <Suspense fallback={<TableSkeleton />}>
-        <GroupsTable
+        <PermissionsTable
           page={Number(page)}
           hiddenColumns={_.castArray(hiddenColumns)}
           orderBy={orderBy}

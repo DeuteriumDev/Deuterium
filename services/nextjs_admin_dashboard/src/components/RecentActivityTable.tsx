@@ -25,7 +25,7 @@ interface RecentActivityTableProps {
 export async function queryRecentNodes(client: typeof sql, page: number) {
   const data = await client<Node>(`
     select *
-    from public.recent_nodes
+    from public.recent_nodes_view
     limit ${PAGE_SIZE}
     offset ${page * PAGE_SIZE}
   `);

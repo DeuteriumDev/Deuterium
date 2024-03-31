@@ -6,7 +6,7 @@ import NodeGrowthCards from '~/components/NodeGrowthCards';
 
 import RecentActivityTable from '~/components/RecentActivityTable';
 import NodeGrowthCardsSkeleton from '~/components/NodeGrowthCardsSkeleton';
-import RecentActivityTableSkeleton from '~/components/RecentActivityTableSkeleton';
+import TableSkeleton from '~/components/TableSkeleton';
 
 interface DashboardProps {
   searchParams: { page: string };
@@ -21,7 +21,7 @@ export default async function Dashboard(props: DashboardProps) {
       <Suspense fallback={<NodeGrowthCardsSkeleton />}>
         <NodeGrowthCards />
       </Suspense>
-      <Suspense fallback={<RecentActivityTableSkeleton />}>
+      <Suspense fallback={<TableSkeleton />}>
         <RecentActivityTable page={Number(page)} />
       </Suspense>
     </div>

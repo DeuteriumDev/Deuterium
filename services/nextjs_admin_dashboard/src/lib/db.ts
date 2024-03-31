@@ -12,6 +12,12 @@ async function sql<Row extends QueryResultRow>(query: string, values?: any[]) {
   let data;
   let error;
 
+  if (process.env.DEBUG) {
+    console.log('--- QUERY START ---');
+    console.log(query);
+    console.log('--- QUERY END ---');
+  }
+
   try {
     data = await client.query<Row>(query, values);
   } catch (e) {

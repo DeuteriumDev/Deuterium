@@ -26,7 +26,7 @@ export async function queryNodeGrowths(client: typeof sql) {
   try {
     data = await client<NodeGrowthResult>(`
       select *
-      from public.node_growth
+      from public.node_growth_view
     `);
   } catch (e) {
     if (e instanceof Error && e.name === 'PostgresError') {

@@ -171,3 +171,23 @@ create view {{ public_schema }}.node_growth as
   order by position;
 
 grant select on {{ public_schema }}.node_growth to {{ authenticated_roles|join(', ') }};
+
+
+create view {{ public_schema }}.document_permissions_view as 
+  select 
+    p.id,
+    p.can_create,
+    p.can_read,
+    p.can_update,
+    p.can_delete,
+    p.created_at,
+    g.name as group_name,
+    d.type as document_type,
+    f.name as document_name
+  from public.document_permissions p
+  join public.groups g on p.group_id = g.id
+  join private.documents d on p.document_id = d.id
+  left join public.folders f on f.id = d.foreign_id;
+
+grant select on {{ public_schema }}.document_permissions_view to {{ authenticated_roles|join(', ') }};
+

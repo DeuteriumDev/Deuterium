@@ -1,7 +1,7 @@
 import React from 'react';
 import Skeleton from '~/components/Skeleton';
 
-export default function RecentActivityTableSkeleton() {
+export default function TableSkeleton() {
   return (
     <div className="pt-10">
       <div className="flex flex-col">
