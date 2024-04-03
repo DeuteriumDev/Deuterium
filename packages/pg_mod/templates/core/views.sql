@@ -81,16 +81,19 @@ create view {{ public_schema }}.recent_nodes_view as
   select * 
   from (
       select
-      id::text,
-      email as name,
+      u.id::text,
+      u.email as name,
       'user' as type,
+      gm.group_id as parent_id,
       created_at
-    from users
+    from users u
+    left join group_members gm on gm.user_id = u.id
     union
     select
       p.id::text,
       g.name::text || ' - ' || p.can_create || '-' || p.can_read || '-' || p.can_update || '-' || p.can_delete as name,
       'permission' as type,
+      null as parent_id,
       p.created_at
     from document_permissions p
     join groups g on g.id = p.group_id
@@ -99,6 +102,7 @@ create view {{ public_schema }}.recent_nodes_view as
       id::text,
       name,
       'group' as type,
+      parent_id,
       created_at
     from groups
     union
@@ -106,6 +110,7 @@ create view {{ public_schema }}.recent_nodes_view as
       f.id::text,
       f.name,
       'folder' as type,
+      d.parent_id as parent_id,
       d.created_at
     from folders f
     join private.documents d on d.foreign_id = f.id
@@ -182,8 +187,10 @@ create view {{ public_schema }}.document_permissions_view as
     p.can_delete,
     p.created_at,
     g.name as group_name,
+    g.id as group_id,
     d.type as document_type,
-    f.name as document_name
+    f.name as document_name,
+    f.id as document_id
   from public.document_permissions p
   join public.groups g on p.group_id = g.id
   join private.documents d on p.document_id = d.id
@@ -194,7 +201,7 @@ grant select on {{ public_schema }}.document_permissions_view to {{ authenticate
 
 create view {{ public_schema }}.documents_view as 
   select 
-    d.id,
+    f.id,
     f.name as name,
     d.created_at,
     d.type as type
