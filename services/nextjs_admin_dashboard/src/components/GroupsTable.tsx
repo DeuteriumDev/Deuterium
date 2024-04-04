@@ -28,13 +28,9 @@ import {
 } from '~/components/Table';
 import NodesFilterForm from '~/components/NodesFilterForm';
 import sql from '~/lib/db';
-
-export interface Group {
-  id: string;
-  name: string;
-  parent_id: string | null;
-  created_at: Date;
-}
+import type { Group } from '~/lib/types';
+import formatCellContent from '~/lib/formatCellContent';
+import buildQuery from '~/lib/buildQuery';
 
 const PAGE_SIZE = 10;
 
@@ -56,35 +52,28 @@ type QueryGroupArgs =
   | QueryGroupOrderArgs
   | QueryGroupWhereArgs;
 
-export async function queryGroups(client: typeof sql, args: QueryGroupArgs) {
-  const { page } = args;
-  const { orderBy, orderDir } = args as QueryGroupOrderArgs;
-  const { where } = args as QueryGroupWhereArgs;
-
-  let data = { rows: [] as Group[], rowCount: 0 };
-  let errorMessage;
-  try {
-    data = await client<Group>(`
-      select *
-      from public.groups
-      ${where ? `where ${where}` : ''}
-      ${orderBy && orderBy ? `order by ${orderBy} ${orderDir}` : ''}
+const queryGroups = async (args: QueryGroupArgs) =>
+  buildQuery<Group>(
+    sql,
+    `
+      select
+        id,
+        '[' || name || '](/nodes/groups/' || id || ')' as name,
+        '[' || path_names[1] || '](/nodes/groups/' || path_ids[1] || ')' as parent_name,
+        created_at
+      from groups_view
+      ${(args as QueryGroupWhereArgs).where ? `where ${(args as QueryGroupWhereArgs).where}` : ''}
+      ${(args as QueryGroupOrderArgs).orderBy && (args as QueryGroupOrderArgs).orderBy ? `order by ${(args as QueryGroupOrderArgs).orderBy} ${(args as QueryGroupOrderArgs).orderDir}` : ''}
       limit ${PAGE_SIZE}
-      offset ${page * PAGE_SIZE}
-    `);
-  } catch (error) {
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-  }
+      offset ${args.page * PAGE_SIZE}
+    `,
+  );
 
-  return {
-    data,
-    errorMessage,
-  };
-}
-
-const columns: (keyof Group)[] = ['name', 'parent_id', 'created_at'];
+const columns: (keyof (Group & { parent_name: string }))[] = [
+  'name',
+  'parent_name',
+  'created_at',
+];
 
 interface GroupsSearchParams {
   hiddenColumns?: string[];
@@ -104,7 +93,7 @@ export default async function GroupsTable(props: GroupsTableProps) {
     orderBy = '',
     where = '',
   } = props;
-  const { data, errorMessage } = await queryGroups(sql, {
+  const { data, errorMessage } = await queryGroups({
     page,
     orderBy,
     orderDir,
@@ -215,9 +204,7 @@ export default async function GroupsTable(props: GroupsTableProps) {
                     _.without(columns, ...hiddenColumns),
                     (column: keyof Group) => (
                       <TableCell key={`cell-${column}-${row.id}`}>
-                        {row[column] instanceof Date
-                          ? (row[column] as Date).toUTCString()
-                          : (row[column] as String | null)}
+                        {formatCellContent(row[column])}
                       </TableCell>
                     ),
                   )}

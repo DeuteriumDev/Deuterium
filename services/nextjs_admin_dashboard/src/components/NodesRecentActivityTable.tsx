@@ -7,6 +7,8 @@ import Link from 'next/link';
 import Button from '~/components/Button';
 import { Table, TableBody, TableCell, TableRow } from '~/components/Table';
 import sql from '~/lib/db';
+import formatCellContent from '~/lib/formatCellContent';
+import buildQuery from '~/lib/buildQuery';
 
 export type Node = {
   id: string;
@@ -22,34 +24,26 @@ interface NodesRecentActivityTableProps {
   page: number;
 }
 
-export async function queryRecentNodes(client: typeof sql, page: number) {
-  const data = await client<Node>(`
-    select *
-    from public.recent_nodes_view
-    limit ${PAGE_SIZE}
-    offset ${page * PAGE_SIZE}
-  `);
-
-  return {
-    data: _.map(data?.rows, (d) => ({
-      id: d.id,
-      name: (
-        <Link href={`/nodes/${d.type}s/${d.id}`} className="underline">
-          {d.name}
-        </Link>
-      ),
-      type: d.type,
-      created_at: d.created_at.toISOString(),
-    })),
-    total: data?.rowCount || 0,
-  };
-}
+const queryRecentNodes = async ({ page }: { page: number }) =>
+  buildQuery<Node>(
+    sql,
+    `
+select 
+  id,
+  '[' || name || '](/nodes/' || type || 's/' || id || ')' as name,
+  type,
+  created_at
+from public.recent_nodes_view
+limit ${PAGE_SIZE}
+offset ${page * PAGE_SIZE}
+`,
+  );
 
 export default async function NodesRecentActivityTable(
   props: NodesRecentActivityTableProps,
 ) {
   const { page = 0 } = props;
-  const { data, total } = await queryRecentNodes(sql, page);
+  const { data, errorMessage } = await queryRecentNodes({ page });
 
   return (
     <div className="w-full">
@@ -61,17 +55,28 @@ export default async function NodesRecentActivityTable(
       <div className="rounded-md border">
         <Table>
           <TableBody>
-            {data ? (
-              _.map(data, (d) => (
+            {errorMessage && (
+              <TableRow>
+                <TableCell
+                  colSpan={TABLE_COLS.length}
+                  className="h-24 text-center text-error"
+                >
+                  {errorMessage}
+                </TableCell>
+              </TableRow>
+            )}
+            {!errorMessage &&
+              data.rows &&
+              _.map(data.rows, (d) => (
                 <TableRow key={d.id}>
                   {_.map(TABLE_COLS, (colName) => (
                     <TableCell key={`${d.id}-${colName}`}>
-                      {d[colName]}
+                      {formatCellContent(d[colName])}
                     </TableCell>
                   ))}
                 </TableRow>
-              ))
-            ) : (
+              ))}
+            {!errorMessage && data.rowCount === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={TABLE_COLS.length}
@@ -97,8 +102,8 @@ export default async function NodesRecentActivityTable(
           <Button
             variant="outline"
             size="sm"
-            disabled={total < (page + 1) * PAGE_SIZE}
-            asChild={total > (page + 1) * PAGE_SIZE}
+            disabled={data.rowCount < (page + 1) * PAGE_SIZE}
+            asChild={data.rowCount > (page + 1) * PAGE_SIZE}
           >
             <Link href={`/dashboard?page=${page + 1}`}>Next</Link>
           </Button>
