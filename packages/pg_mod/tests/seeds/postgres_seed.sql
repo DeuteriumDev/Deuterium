@@ -1,6 +1,7 @@
 alter table {{ public_schema }}.folders disable trigger all;
 
 insert into {{ public_schema }}.groups values ('f2b2e738-c43f-41d6-8ee5-02606a09464f', 'test group 1', null, '2024-01-24 13:04:54.357442+00');
+insert into {{ public_schema }}.groups values ('12153362-ccfe-4eb1-ab5d-1ac8706ecd78', 'test group 1-1', 'f2b2e738-c43f-41d6-8ee5-02606a09464f', '2024-03-24 13:04:54.357442+00');
 insert into {{ public_schema }}.groups values ('99ec64b9-486b-4fff-b7dd-28c31c6d5b18', 'test group 2', null, '2024-02-24 13:04:54.357442+00');
 
 insert into {{ public_schema }}.users values (1, 'test@test.ca', '2024-01-24 13:04:54.357442+00');
