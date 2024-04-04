@@ -17,14 +17,18 @@ async function sql<Row extends QueryResultRow>(
 
   if (process.env.DEBUG) {
     /* eslint-disable no-console */
-    console.log('---\t\tQUERY START\t\t---');
+    console.log('---\t\tQuery:\t\t---');
     console.log(query);
   }
 
   try {
+    const start = performance.now();
     data = await client.query<Row>(query, values);
-    console.log('---\t\tQUERY END\t\t---');
-    console.log(`---\t\tresult count: ${data?.rowCount}\t\t---`);
+
+    console.log(`---\t\tQuery count: ${data?.rowCount}\t\t---`);
+    console.log(
+      `---\t\tQuery duration: ${((performance.now() - start) as number).toFixed(2)} ms\t\t---`,
+    );
   } catch (e) {
     error = e as Error;
   } finally {
