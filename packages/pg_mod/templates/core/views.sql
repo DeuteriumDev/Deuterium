@@ -210,3 +210,41 @@ create view {{ public_schema }}.documents_view as
 
 grant select on {{ public_schema }}.documents_view to {{ authenticated_roles|join(', ') }};
 
+
+create view {{ public_schema }}.groups_view as 
+  with recursive groups_with_path(
+    id
+    , name
+    , created_at
+    , path_ids
+    , path_names
+  ) as (
+  select
+    id
+    , name
+    , created_at
+    , array[]::uuid[] as path_ids
+    , array[]::text[] as path_names
+  from groups g
+  where parent_id is null
+  union 
+  select
+    g.id
+    , g.name
+    , g.created_at
+    , gp.path_ids || array[g.parent_id] as path_ids
+    , gp.path_names || array[gg.name] as path_names
+  from groups g
+  join groups_with_path gp on gp.id = g.parent_id
+  left join groups gg on gg.id = g.parent_id
+  )
+  select
+    id
+    , name
+    , created_at
+    , path_ids
+    , path_names
+  from groups_with_path;
+
+grant select on {{ public_schema }}.groups_view to {{ authenticated_roles|join(', ') }};
+
