@@ -4,38 +4,9 @@ import _ from 'lodash';
 import { revalidatePath } from 'next/cache';
 
 import buildQuery from '~/libs/buildQuery';
+import castValueToSQL from '~/libs/castValueToSQL';
 import sql from '~/libs/db';
 import { Group } from '~/libs/types';
-
-/**
- * Cast provided value to correct type for query
- *
- * @param value - whatever query value
- * @param key - optional key to use as name-string for query, usually param "$index"
- * @returns
- */
-function castValueToSQL(value: unknown, key?: string): string | null {
-  if (_.isNil(value)) {
-    return key ? (key as string) : (value as null);
-  }
-
-  if (
-    _.isString(value) &&
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-      value,
-    )
-  ) {
-    if (key) {
-      return `${key}::uuid`;
-    }
-    return `${value}::uuid`;
-  }
-
-  if (key) {
-    return key;
-  }
-  return _.toString(value);
-}
 
 interface UpsertGroupArgs {
   id?: string;
@@ -49,9 +20,7 @@ interface UpsertGroupArgs {
  * @param group - group to be created / updated
  * @returns
  */
-async function upsertGroup(group: UpsertGroupArgs, revalidatePaths?: string[]) {
-  console.log(group);
-
+async function upsertGroup(group: UpsertGroupArgs) {
   const keys = _.keys(group) as (keyof typeof group)[];
   const result = await buildQuery<Group>(
     sql,
@@ -67,9 +36,15 @@ async function upsertGroup(group: UpsertGroupArgs, revalidatePaths?: string[]) {
       `,
     _.values(group),
   );
-  if (revalidatePaths) {
-    _.map(revalidatePaths, revalidatePath);
-  }
+
+  _.forEach(
+    [
+      `/groups/${group.id}`,
+      '/groups',
+      group.parent_id && `/groups/${group.parent_id}`,
+    ],
+    (p) => p && revalidatePath(p),
+  );
   return result;
 }
 

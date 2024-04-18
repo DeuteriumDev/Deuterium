@@ -91,6 +91,7 @@ export default function useQuery<T>(
   }, options?.dependencies || []);
 
   if (options?.debug) {
+    // eslint-disable-next-line no-console
     console.log({
       loading,
       data,

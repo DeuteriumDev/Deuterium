@@ -83,21 +83,14 @@ export default function GroupsForm(props: GroupsFormProps) {
     deleteGroup({ id: group.id }, ['/groups', `/groups/${group.id}`]),
   );
   const update = useQuery<Group>(() =>
-    upsertGroup(
-      {
-        id: form.getValues('id'),
-        name: form.getValues('name'),
-        parent_id:
-          form.getValues('parent_id') === 'null'
-            ? null
-            : form.getValues('parent_id'),
-      },
-      [
-        '/groups',
-        `/groups/${form.getValues('name')}`,
-        `/groups/${form.getValues('id')}`,
-      ],
-    ),
+    upsertGroup({
+      id: form.getValues('id'),
+      name: form.getValues('name'),
+      parent_id:
+        form.getValues('parent_id') === 'null'
+          ? null
+          : form.getValues('parent_id'),
+    }),
   );
   const router = useRouter();
 

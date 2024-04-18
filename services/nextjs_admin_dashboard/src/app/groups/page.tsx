@@ -44,7 +44,7 @@ export default async function GroupsPage(props: GroupPageProps) {
         where={where}
         columns={columns}
         pageSize={PAGE_SIZE}
-        rows={queryGroupsResult.data.rows}
+        rows={queryGroupsResult.data?.rows}
         errorMessage={queryGroupsResult.errorMessage}
       />
     </div>

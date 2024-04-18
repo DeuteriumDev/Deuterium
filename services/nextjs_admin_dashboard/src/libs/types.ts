@@ -6,7 +6,7 @@ export interface Group extends Record<string, unknown> {
   path_names: string;
 }
 
-export interface Permission {
+export interface Permission extends Record<string, unknown> {
   id: string;
   can_create: boolean;
   can_read: boolean;
@@ -18,14 +18,14 @@ export interface Permission {
   document_name: string;
 }
 
-export interface Document {
+export interface Document extends Record<string, unknown> {
   id: string;
   type: string;
   name: string;
   created_at: Date;
 }
 
-export interface User {
+export interface User extends Record<string, unknown> {
   id: string;
   email: string;
   created_at: Date;
