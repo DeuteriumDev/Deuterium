@@ -5,7 +5,18 @@ This application is the dev platform for managing database items on a connected 
 ## Getting started
 
 - Install dependencies with `yarn`
-- Add a `<dashboard_root_dir>/.env` file with `DB_CONNECTION=postgresql://postgres:postgres@localhost:54311/postgres` (assuming your using the local docker-compose dev environment)
+- Add a `<dashboard_root_dir>/.env` file with the following env variables (assuming your using the local docker-compose dev environment)
+  ```
+  # .env
+
+  DB_CONNECTION=postgresql://postgres:postgres@localhost:54311/postgres
+  DEBUG=true
+  PORT=4002
+  PUBLIC_SCHEMA=public
+  PRIVATE_SCHEMA=private
+  APP_ROOT=/
+  ```
+  
 - run the project with `yarn dev` and goto [http://localhost:4002/](http://localhost:4002/)
 
 ## Technologies
@@ -33,3 +44,15 @@ The convention is as follows:
   ```
 - if a component is refactored to have an external resource (like a helper or util) it will be added to the `~/libs/` dir and named `~/libs/use<ComponentName>`
 - tests for each component will go into `~/components/__tests__` to keep the folder clean and easy to navigate
+
+## Data convention
+
+The dataflow should avoid using async components, and instead focus on loading the data at the page level. This ensures that the components are individually testable rather than linked to the NextJS environment.
+
+### Visual representation 
+
+> #### page.tsx
+> - loads data
+> > #### component.tsx
+> > - loads view
+

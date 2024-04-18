@@ -6,9 +6,9 @@ import Link from 'next/link';
 
 import Button from '~/components/Button';
 import { Table, TableBody, TableCell, TableRow } from '~/components/Table';
-import sql from '~/lib/db';
-import formatCellContent from '~/lib/formatCellContent';
-import buildQuery from '~/lib/buildQuery';
+import sql from '~/libs/db';
+import formatCellContent from '~/libs/formatCellContent';
+import buildQuery from '~/libs/buildQuery';
 
 export type Node = {
   id: string;
@@ -30,10 +30,10 @@ const queryRecentNodes = async ({ page }: { page: number }) =>
     `
 select 
   id,
-  '[' || name || '](/nodes/' || type || 's/' || id || ')' as name,
+  '[' || name || '](/' || type || 's/' || id || ')' as name,
   type,
   created_at
-from public.recent_nodes_view
+from ${process.env.PUBLIC_SCHEMA}.recent_nodes_view
 limit ${PAGE_SIZE}
 offset ${page * PAGE_SIZE}
 `,
@@ -49,7 +49,7 @@ export default async function NodesRecentActivityTable(
     <div className="w-full">
       <div className="flex items-center py-4">
         <h2 className="ml-1 text-2xl font-bold tracking-tight">
-          Recently Created Nodes
+          Recently Created
         </h2>
       </div>
       <div className="rounded-md border">

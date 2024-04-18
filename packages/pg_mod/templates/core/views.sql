@@ -133,7 +133,7 @@ create view {{ public_schema }}.node_growth_view as
         from public.users
         where extract (month from created_at) = extract (month from now())
       )	as count_this_month,
-      'users' as type,
+      'user' as type,
       0 as position
     from public.users
     union
@@ -145,7 +145,7 @@ create view {{ public_schema }}.node_growth_view as
       from public.groups
       where extract (month from created_at) = extract (month from now())
       )	as count_this_month,
-      'groups' as type,
+      'group' as type,
       1 as position
     from public.groups
     union
@@ -157,7 +157,7 @@ create view {{ public_schema }}.node_growth_view as
         from public.document_permissions
         where extract (month from created_at) = extract (month from now())
       )	as count_this_month,
-      'permissions' as type,
+      'permission' as type,
       2 as position
     from public.document_permissions
     union
@@ -169,7 +169,7 @@ create view {{ public_schema }}.node_growth_view as
         from private.documents
         where extract (month from created_at) = extract (month from now())
       )	as count_this_month,
-      'documents' as type,
+      'document' as type,
       3 as position
     from private.documents
   )
@@ -232,8 +232,8 @@ create view {{ public_schema }}.groups_view as
     g.id
     , g.name
     , g.created_at
-    , gp.path_ids || array[g.parent_id] as path_ids
-    , gp.path_names || array[gg.name] as path_names
+    , array[g.parent_id] || gp.path_ids  as path_ids
+    , array[gg.name] || gp.path_names as path_names
   from groups g
   join groups_with_path gp on gp.id = g.parent_id
   left join groups gg on gg.id = g.parent_id

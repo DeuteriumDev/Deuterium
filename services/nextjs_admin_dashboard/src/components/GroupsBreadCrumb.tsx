@@ -1,5 +1,3 @@
-'use server';
-
 import _ from 'lodash';
 import Link from 'next/link';
 import {
@@ -17,68 +15,27 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/DropdownMenu';
-import buildQuery from '~/lib/buildQuery';
-import sql from '~/lib/db';
-import { Group } from '~/lib/types';
+import { Group } from '~/libs/types';
 
 interface GroupsBreadCrumbProps {
-  id: string;
+  groupsCrumbs: (Group | Group[])[];
 }
-
-interface QueryGroupsBreadcrumbsArgs {
-  id: string;
-}
-
-const queryGroupBreadcrumbs = async ({ id }: QueryGroupsBreadcrumbsArgs) =>
-  buildQuery<Group>(
-    sql,
-    `
-      with recursive groups_with_path(id, name, parent_id, created_at, index) as (
-          select
-              id,
-              name,
-              parent_id,
-              created_at,
-              0 as index
-          from groups
-          where id = '${id}'
-          union
-          select
-              g.id,
-              g.name,
-              g.parent_id,
-              g.created_at,
-              gp.index + 1 as index
-          from groups g
-          join groups_with_path gp on gp.parent_id = g.id
-      )
-      select
-          id,
-          name,
-          parent_id,
-          created_at
-      from groups_with_path
-      order by index desc
-    `,
-  );
 
 const BREADCRUMB_CONCAT_COUNT = 5;
 
-export default async function GroupsBreadCrumb(props: GroupsBreadCrumbProps) {
-  const { id } = props;
-  const { data, errorMessage } = await queryGroupBreadcrumbs({ id });
+export default function GroupsBreadCrumb(props: GroupsBreadCrumbProps) {
+  const { groupsCrumbs } = props;
 
   const crumbs =
-    data.rowCount >= BREADCRUMB_CONCAT_COUNT
+    groupsCrumbs.length >= BREADCRUMB_CONCAT_COUNT
       ? [
-          _.filter(data.rows, (_r, index) => index !== data.rowCount - 1),
-          _.last(data.rows),
+          _.filter(
+            groupsCrumbs,
+            (_r, index) => index !== groupsCrumbs.length - 1,
+          ),
+          _.last(groupsCrumbs),
         ]
-      : data.rows;
-
-  if (errorMessage) {
-    return <div className="text-error">{errorMessage}</div>;
-  }
+      : groupsCrumbs;
 
   return (
     <Breadcrumb>
@@ -91,16 +48,19 @@ export default async function GroupsBreadCrumb(props: GroupsBreadCrumbProps) {
             const Crumb =
               crumbs.length - 1 === index ? BreadcrumbPage : BreadcrumbItem;
             return (
-              <>
+              <div
+                key={`crumb-${(crumbOrArray as Group).id}`}
+                className="contents"
+              >
                 <BreadcrumbSeparator />
-                <Crumb key={`crumb-${(crumbOrArray as Group).id}`}>
+                <Crumb>
                   <BreadcrumbLink
-                    href={`/nodes/groups/${(crumbOrArray as Group).id}`}
+                    href={`/groups/${(crumbOrArray as Group).id}`}
                   >
                     {(crumbOrArray as Group).name}
                   </BreadcrumbLink>
                 </Crumb>
-              </>
+              </div>
             );
           }
           return (

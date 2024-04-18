@@ -1,5 +1,3 @@
-'use server';
-
 import * as React from 'react';
 import {
   ArrowDown,
@@ -27,53 +25,7 @@ import {
   TableRow,
 } from '~/components/Table';
 import NodesFilterForm from '~/components/NodesFilterForm';
-import sql from '~/lib/db';
-import type { Group } from '~/lib/types';
-import formatCellContent from '~/lib/formatCellContent';
-import buildQuery from '~/lib/buildQuery';
-
-const PAGE_SIZE = 10;
-
-type QueryGroupOrderArgs = {
-  page: number;
-  orderBy: string;
-  orderDir: string;
-};
-
-type QueryGroupWhereArgs = {
-  where: string;
-  page: number;
-};
-
-type QueryGroupArgs =
-  | {
-      page: number;
-    }
-  | QueryGroupOrderArgs
-  | QueryGroupWhereArgs;
-
-const queryGroups = async (args: QueryGroupArgs) =>
-  buildQuery<Group>(
-    sql,
-    `
-      select
-        id,
-        '[' || name || '](/nodes/groups/' || id || ')' as name,
-        '[' || path_names[1] || '](/nodes/groups/' || path_ids[1] || ')' as parent_name,
-        created_at
-      from groups_view
-      ${(args as QueryGroupWhereArgs).where ? `where ${(args as QueryGroupWhereArgs).where}` : ''}
-      ${(args as QueryGroupOrderArgs).orderBy && (args as QueryGroupOrderArgs).orderBy ? `order by ${(args as QueryGroupOrderArgs).orderBy} ${(args as QueryGroupOrderArgs).orderDir}` : ''}
-      limit ${PAGE_SIZE}
-      offset ${args.page * PAGE_SIZE}
-    `,
-  );
-
-const columns: (keyof (Group & { parent_name: string }))[] = [
-  'name',
-  'parent_name',
-  'created_at',
-];
+import formatCellContent from '~/libs/formatCellContent';
 
 interface GroupsSearchParams {
   hiddenColumns?: string[];
@@ -82,23 +34,26 @@ interface GroupsSearchParams {
   orderDir?: string;
   where?: string;
 }
+type Row = Record<string, unknown> & { id: string };
+interface GroupsTableProps extends Required<GroupsSearchParams> {
+  columns: (keyof Row)[];
+  rows: Row[];
+  pageSize: number;
+  errorMessage?: string;
+}
 
-interface GroupsTableProps extends Required<GroupsSearchParams> {}
-
-export default async function GroupsTable(props: GroupsTableProps) {
+export default function DataTable(props: GroupsTableProps) {
   const {
     hiddenColumns = [],
     page = 0,
     orderDir = '',
     orderBy = '',
     where = '',
+    columns,
+    rows,
+    pageSize,
+    errorMessage,
   } = props;
-  const { data, errorMessage } = await queryGroups({
-    page,
-    orderBy,
-    orderDir,
-    where,
-  });
 
   const buildQuery = (params?: GroupsSearchParams) => ({
     query: {
@@ -196,21 +151,17 @@ export default async function GroupsTable(props: GroupsTableProps) {
                 </TableCell>
               </TableRow>
             )}
-            {!errorMessage &&
-              data?.rowCount > 0 &&
-              _.map(data.rows, (row) => (
+            {rows.length > 0 &&
+              _.map(rows, (row) => (
                 <TableRow key={row.id}>
-                  {_.map(
-                    _.without(columns, ...hiddenColumns),
-                    (column: keyof Group) => (
-                      <TableCell key={`cell-${column}-${row.id}`}>
-                        {formatCellContent(row[column])}
-                      </TableCell>
-                    ),
-                  )}
+                  {_.map(_.without(columns, ...hiddenColumns), (column) => (
+                    <TableCell key={`cell-${column}-${row.id}`}>
+                      {formatCellContent(row[column])}
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))}
-            {!errorMessage && data?.rowCount === 0 && (
+            {!errorMessage && rows.length === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
@@ -238,8 +189,8 @@ export default async function GroupsTable(props: GroupsTableProps) {
           <Button
             variant="outline"
             size="sm"
-            disabled={data.rowCount < PAGE_SIZE}
-            asChild={data.rowCount === PAGE_SIZE}
+            disabled={rows.length < pageSize}
+            asChild={rows.length === pageSize}
           >
             <Link replace href={buildQuery({ page: page + 1 })}>
               Next

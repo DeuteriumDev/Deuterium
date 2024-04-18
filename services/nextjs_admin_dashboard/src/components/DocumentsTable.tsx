@@ -27,10 +27,10 @@ import {
   TableRow,
 } from '~/components/Table';
 import NodesFilterForm from '~/components/NodesFilterForm';
-import sql from '~/lib/db';
-import type { Document } from '~/lib/types';
-import formatCellContent from '~/lib/formatCellContent';
-import buildQuery from '~/lib/buildQuery';
+import sql from '~/libs/db';
+import type { Document } from '~/libs/types';
+import formatCellContent from '~/libs/formatCellContent';
+import buildQuery from '~/libs/buildQuery';
 
 const PAGE_SIZE = 10;
 
@@ -61,7 +61,7 @@ const queryDocuments = async (args: QueryDocumentArgs) =>
         '[' || name || '](/nodes/' || type || 's/' || id || ')' as name,
         type,
         created_at
-      from documents_view
+      from ${process.env.PUBLIC_SCHEMA}.documents_view
       ${(args as QueryDocumentWhereArgs).where ? `where ${(args as QueryDocumentWhereArgs).where}` : ''}
       ${(args as QueryDocumentOrderArgs).orderBy && (args as QueryDocumentOrderArgs).orderBy ? `order by ${(args as QueryDocumentOrderArgs).orderBy} ${(args as QueryDocumentOrderArgs).orderDir}` : ''}
       limit ${PAGE_SIZE}

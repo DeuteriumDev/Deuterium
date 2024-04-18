@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { LucideIcon } from 'lucide-react';
 import _ from 'lodash';
 
-import { cn } from '~/lib/utils';
+import cn from '~/libs/className';
 
 interface NavProps {
   links: {

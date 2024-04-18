@@ -50,13 +50,10 @@ grant all on {{ private_schema }}.documents to {{ authenticated_roles|join(', ')
 -- groups
 CREATE TABLE {{ public_schema }}.groups (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    {% if include_timestamps %}
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    {% endif %}
     name text DEFAULT ''::text NOT NULL,
-    parent_id uuid,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    parent_id uuid
 );
 
 alter table {{ public_schema }}.groups ADD CONSTRAINT
@@ -75,10 +72,8 @@ create table {{ public_schema }}.group_permissions (
     can_read boolean default true not null,
     can_update boolean default true not null,
     can_delete boolean default true not null,
-    {% if include_timestamps %}
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    {% endif %}
     owner_group_id uuid,
     target_group_id uuid
 );
@@ -137,17 +132,14 @@ grant all on {{ public_schema }}.group_members to {{ authenticated_roles|join(',
 -- document_permissions
 create table {{ public_schema }}.document_permissions (
     id uuid DEFAULT gen_random_uuid() primary key,
-    {% if include_timestamps %}
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    {% endif %}
     can_create boolean default true not null,
     can_read boolean default true not null,
     can_update boolean default true not null,
     can_delete boolean default true not null,
     document_id uuid,
-    group_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    group_id uuid NOT NULL
 );
 
 alter table {{ public_schema }}.document_permissions ADD CONSTRAINT
@@ -166,10 +158,8 @@ grant all on {{ public_schema }}.document_permissions to {{ authenticated_roles|
 -- folders
 create table {{ public_schema }}.folders (
     id uuid DEFAULT gen_random_uuid() primary key,
-    {% if include_timestamps %}
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    {% endif %}
     name text,
     description text
 );

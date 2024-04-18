@@ -2,16 +2,16 @@ import _ from 'lodash';
 import { User2, Users, Lock, FileText } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/Card';
-import sql from '~/lib/db';
+import sql from '~/libs/db';
 
 export const NODES_CARDS_CONFIG = {
-  users: User2,
-  groups: Users,
-  permissions: Lock,
-  documents: FileText,
+  user: User2,
+  group: Users,
+  permission: Lock,
+  document: FileText,
 };
 
-export type NodeType = 'users' | 'groups' | 'permissions' | 'documents';
+export type NodeType = 'user' | 'group' | 'permission' | 'document';
 
 interface NodeGrowthResult {
   type: NodeType;

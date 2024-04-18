@@ -1,0 +1,48 @@
+'use server';
+
+import _ from 'lodash';
+import { revalidatePath } from 'next/cache';
+
+import buildQuery from '~/libs/buildQuery';
+import sql from '~/libs/db';
+import { Group } from '~/libs/types';
+
+/**
+ *
+ * @param param0 - group [id] to delete on
+ * @param revalidatePaths - optionally clear caches of provided paths
+ * @returns
+ */
+const deleteGroup = async (
+  { id }: { id: string },
+  revalidatePaths?: string[],
+) => {
+  const result1 = await buildQuery<Group>(
+    sql,
+    `
+      delete from ${process.env.PUBLIC_SCHEMA}.groups where id = $1;
+    `,
+    [id],
+  );
+  const result2 = await buildQuery<Group>(
+    sql,
+    `
+      delete from ${process.env.PUBLIC_SCHEMA}.group_members where group_id = $1;
+    `,
+    [id],
+  );
+
+  if (revalidatePaths) {
+    _.map(revalidatePaths, revalidatePath);
+  }
+
+  return {
+    data: {
+      rows: [...result1.data.rows, result2.data.rows],
+      rowCount: result1.data.rowCount + result1.data.rowCount,
+    },
+    errorMessage: result1.errorMessage || result2.errorMessage,
+  };
+};
+
+export default deleteGroup;

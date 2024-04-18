@@ -14,6 +14,18 @@ help: ## Show this help
 	@echo ""
 .PHONY: help
 
-dev: ## startup the app
-	@DEBUG=true yarn dev
+dev: ## startup the app for local use
+	@yarn run next dev
 .PHONY: dev
+
+build: ## build the app
+	@yarn run next build
+.PHONY: build
+
+start: ## Run the built version of the app
+	@yarn run next start
+.PHONY: start
+
+lint: ## Lint the app, should run before build since it's more terse and faster
+	@yarn run next lint
+.PHONY: lint

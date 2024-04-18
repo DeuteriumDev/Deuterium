@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { Suspense } from 'react';
-import GroupsTable from '~/components/GroupsTable';
-import TableSkeleton from '~/components/TableSkeleton';
+import DataTable from '~/components/DataTable';
+import queryGroups from '~/actions/queryGroups';
+import { PAGE_SIZE } from '~/config';
 
 interface GroupPageProps {
   searchParams: {
@@ -12,7 +12,10 @@ interface GroupPageProps {
     where: string;
   };
 }
-export default function Groups(props: GroupPageProps) {
+
+const columns = ['name', 'parent_name', 'created_at'];
+
+export default async function GroupsPage(props: GroupPageProps) {
   const {
     searchParams: {
       page = 0,
@@ -22,18 +25,28 @@ export default function Groups(props: GroupPageProps) {
       where = '',
     },
   } = props;
+
+  const queryGroupsResult = await queryGroups({
+    page: Number(page),
+    orderBy,
+    orderDir,
+    where,
+  });
+
   return (
     <div>
       <h2 className="ml-1 text-2xl font-bold tracking-tight">Groups</h2>
-      <Suspense fallback={<TableSkeleton />}>
-        <GroupsTable
-          page={Number(page)}
-          hiddenColumns={_.castArray(hiddenColumns)}
-          orderBy={orderBy}
-          orderDir={orderDir}
-          where={where}
-        />
-      </Suspense>
+      <DataTable
+        page={Number(page)}
+        hiddenColumns={_.castArray(hiddenColumns)}
+        orderBy={orderBy}
+        orderDir={orderDir}
+        where={where}
+        columns={columns}
+        pageSize={PAGE_SIZE}
+        rows={queryGroupsResult.data.rows}
+        errorMessage={queryGroupsResult.errorMessage}
+      />
     </div>
   );
 }

@@ -27,10 +27,10 @@ import {
   TableRow,
 } from '~/components/Table';
 import NodesFilterForm from '~/components/NodesFilterForm';
-import sql from '~/lib/db';
-import type { Permission } from '~/lib/types';
-import formatCellContent from '~/lib/formatCellContent';
-import buildQuery from '~/lib/buildQuery';
+import sql from '~/libs/db';
+import type { Permission } from '~/libs/types';
+import formatCellContent from '~/libs/formatCellContent';
+import buildQuery from '~/libs/buildQuery';
 
 const PAGE_SIZE = 10;
 
@@ -66,7 +66,7 @@ const queryPermissions = async (args: QueryGroupArgs) =>
         '[' || group_name || '](/nodes/groups/' || group_id || ')' as group_name,
         document_type,
         '[' || document_name || '](/nodes/' || document_type || 's/' || document_id || ')' as document_name
-      from document_permissions_view
+      from ${process.env.PUBLIC_SCHEMA}.document_permissions_view
       ${(args as QueryGroupWhereArgs).where ? `where ${(args as QueryGroupWhereArgs).where}` : ''}
       ${(args as QueryGroupOrderArgs).orderBy && (args as QueryGroupOrderArgs).orderBy ? `order by ${(args as QueryGroupOrderArgs).orderBy} ${(args as QueryGroupOrderArgs).orderDir}` : ''}
       limit ${PAGE_SIZE}

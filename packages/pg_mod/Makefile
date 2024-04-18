@@ -9,6 +9,7 @@ install: ## Install pre-req software
 	@yarn install --immutable
 	@brew install gnuplot
 	@brew install sqlfluff
+	@brew install git-lfs
 .PHONY: install
 
 builds: ## Build all available framework migrations according to the basic data

@@ -1,4 +1,4 @@
-export interface Group {
+export interface Group extends Record<string, unknown> {
   id: string;
   name: string;
   created_at: Date;
