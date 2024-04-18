@@ -70,7 +70,7 @@ export default function GroupsForm(props: GroupsFormProps) {
         where: where ? `name like '%${where}%'` : '',
       }),
     {
-      initialize: !!group,
+      initialize: true,
       debounce: 500,
       dependencies: [group?.id, where],
     },
