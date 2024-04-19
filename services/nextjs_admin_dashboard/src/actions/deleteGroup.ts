@@ -13,28 +13,31 @@ import { Group } from '~/libs/types';
  * @param revalidatePaths - optionally clear caches of provided paths
  * @returns
  */
-const deleteGroup = async (
-  { id }: { id: string },
-  revalidatePaths?: string[],
-) => {
+const deleteGroup = async ({ id }: { id: string }) => {
   const result1 = await buildQuery<Group>(
     sql,
     `
-      delete from ${process.env.PUBLIC_SCHEMA}.groups where id = $1;
+      delete from ${process.env.PUBLIC_SCHEMA}.groups where id = $1 returning *
     `,
     [id],
   );
   const result2 = await buildQuery<Group>(
     sql,
     `
-      delete from ${process.env.PUBLIC_SCHEMA}.group_members where group_id = $1;
+      delete from ${process.env.PUBLIC_SCHEMA}.group_members where group_id = $1 returning * 
     `,
     [id],
   );
 
-  if (revalidatePaths) {
-    _.map(revalidatePaths, revalidatePath);
-  }
+  _.forEach(
+    _.concat(
+      _.map(result2.data.rows, (r) => `/users/${r.user_id}`),
+      '/users',
+      '/groups',
+      `/groups/${id}`,
+    ),
+    (p) => revalidatePath(p),
+  );
 
   return {
     data: {

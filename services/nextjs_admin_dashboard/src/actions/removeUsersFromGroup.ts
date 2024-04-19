@@ -18,20 +18,27 @@ interface RemoveUsersFromGroupArgs {
  * @param revalidatePaths - clear caching along provided paths
  * @returns
  */
-const removeUsersFromGroup = async (
-  { users, groupId }: RemoveUsersFromGroupArgs,
-  revalidatePaths?: string[],
-) => {
+const removeUsersFromGroup = async ({
+  users,
+  groupId,
+}: RemoveUsersFromGroupArgs) => {
   const results = await buildQuery(
     sql,
     `
-        delete from ${process.env.PUBLIC_SCHEMA}.group_members where user_id = any(${_.map(users, (_u, i) => `($${i + 2})`).join(', ')}) and group_id = $1
-      `,
+      delete from ${process.env.PUBLIC_SCHEMA}.group_members where user_id = any(${_.map(users, (_u, i) => `($${i + 2})`).join(', ')}) and group_id = $1
+    `,
     [groupId, _.map(users, (u) => u.id)],
   );
-  if (revalidatePaths) {
-    _.map(revalidatePaths, revalidatePath);
-  }
+
+  _.forEach(
+    _.concat(
+      _.map(users, (u) => `/users/${u.id}`),
+      `/groups/${groupId}`,
+      '/users',
+      '/groups',
+    ),
+    (p) => p && revalidatePath(p),
+  );
   return results;
 };
 

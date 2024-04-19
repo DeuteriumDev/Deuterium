@@ -79,9 +79,7 @@ export default function GroupsForm(props: GroupsFormProps) {
     resolver: zodResolver(GroupFormSchema),
     defaultValues: { ...group, parent_id: group.parent_id || 'null' },
   });
-  const remove = useQuery<Group>(() =>
-    deleteGroup({ id: group.id }, ['/groups', `/groups/${group.id}`]),
-  );
+  const remove = useQuery<Group>(() => deleteGroup({ id: group.id }));
   const update = useQuery<Group>(() =>
     upsertGroup({
       id: form.getValues('id'),
@@ -109,7 +107,7 @@ export default function GroupsForm(props: GroupsFormProps) {
       if (error instanceof Error) {
         form.setError('root.serverError', {
           type: 'manual',
-          message: `ServerSideError: ${error.message}`,
+          message: error.message,
         });
       }
     }
@@ -126,7 +124,7 @@ export default function GroupsForm(props: GroupsFormProps) {
       if (error instanceof Error) {
         form.setError('root.serverError', {
           type: 'manual',
-          message: `ServerSideError: ${error.message}`,
+          message: error.message,
         });
       }
     }

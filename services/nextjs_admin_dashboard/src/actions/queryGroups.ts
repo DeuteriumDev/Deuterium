@@ -23,8 +23,8 @@ export type QueryGroupArgs =
   | QueryGroupOrderArgs
   | QueryGroupWhereArgs;
 
-const queryGroups = async (args: QueryGroupArgs) => {
-  const results = await buildQuery<Group>(
+const queryGroups = async (args: QueryGroupArgs) =>
+  await buildQuery<Group>(
     sql,
     `
       select
@@ -39,8 +39,5 @@ const queryGroups = async (args: QueryGroupArgs) => {
       offset ${args.page * PAGE_SIZE}
     `,
   );
-
-  return results;
-};
 
 export default queryGroups;
