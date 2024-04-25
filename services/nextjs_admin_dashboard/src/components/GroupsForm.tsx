@@ -33,7 +33,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '~/components/Popover';
 import cn from '~/libs/className';
 import useQuery from '~/libs/useQuery';
 import deleteGroup from '~/actions/deleteGroup';
-import queryGroupChildren from '~/actions/queryGroupChildren';
+import queryGroupChildren, { UserOrGroup } from '~/actions/queryGroupChildren';
 import { Alert, AlertDescription, AlertTitle } from '~/components/Alert';
 import GroupsUserAddDialog from '~/components/GroupsUserAddDialog';
 import {
@@ -62,13 +62,16 @@ interface GroupsFormProps {
 export default function GroupsForm(props: GroupsFormProps) {
   const { group } = props;
   const [where, setWhere] = useState('');
-  const parents = useQuery<Group>(
+  const parents = useQuery(
     () =>
-      queryGroupChildren({
-        id: group.id,
-        page: 0,
-        where: where ? `name like '%${where}%'` : '',
-      }),
+      queryGroupChildren(
+        {
+          parent_id: group.id,
+          page: 0,
+          where: where ? `name like $1` : undefined,
+        },
+        where ? [`%${where}%`] : undefined,
+      ),
     {
       initialize: true,
       debounce: 500,
@@ -79,7 +82,7 @@ export default function GroupsForm(props: GroupsFormProps) {
     resolver: zodResolver(GroupFormSchema),
     defaultValues: { ...group, parent_id: group.parent_id || 'null' },
   });
-  const remove = useQuery<Group>(() => deleteGroup({ id: group.id }));
+  const remove = useQuery(() => deleteGroup({ id: group.id }));
   const update = useQuery<Group>(() =>
     upsertGroup({
       id: form.getValues('id'),
@@ -96,7 +99,7 @@ export default function GroupsForm(props: GroupsFormProps) {
   const _handleSubmit = async () => {
     try {
       const data = await update.execute();
-      if (data.errorMessage) {
+      if (data?.errorMessage) {
         throw new Error(data.errorMessage);
       } else if (data?.data?.rowCount !== 1) {
         throw new Error('UpsertGroupError: No rows added');
@@ -117,7 +120,7 @@ export default function GroupsForm(props: GroupsFormProps) {
     try {
       const data = await remove.execute();
       router.push(`/groups?v=${Date.now()}`);
-      if (data.errorMessage) {
+      if (data?.errorMessage) {
         throw new Error(data.errorMessage);
       }
     } catch (error) {
@@ -137,11 +140,11 @@ export default function GroupsForm(props: GroupsFormProps) {
         {
           id: 'null',
           name: 'No parent',
-        } as Group,
+        } as UserOrGroup,
       ],
-      parents.data?.rows,
+      parents.data?.rows || [],
     ),
-  ) as Group[];
+  );
 
   return (
     <Form {...form}>

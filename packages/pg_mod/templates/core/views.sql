@@ -190,7 +190,8 @@ create view {{ public_schema }}.document_permissions_view as
     g.id as group_id,
     d.type as document_type,
     f.name as document_name,
-    f.id as document_id
+    f.id as foreign_id,
+    d.id as document_id
   from public.document_permissions p
   join public.groups g on p.group_id = g.id
   join private.documents d on p.document_id = d.id

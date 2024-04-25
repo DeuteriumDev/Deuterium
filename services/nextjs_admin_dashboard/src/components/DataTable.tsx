@@ -5,6 +5,7 @@ import {
   ChevronDownIcon,
   Check,
   RotateCcwSquare,
+  PlusCircle,
 } from 'lucide-react';
 import _ from 'lodash';
 import Link from 'next/link';
@@ -39,7 +40,8 @@ interface GroupsTableProps extends Required<GroupsSearchParams> {
   columns: (keyof Row)[];
   rows: Row[];
   pageSize: number;
-  errorMessage?: string;
+  errorMessage?: string | null;
+  newLink?: string;
 }
 
 export default function DataTable(props: GroupsTableProps) {
@@ -53,6 +55,7 @@ export default function DataTable(props: GroupsTableProps) {
     rows,
     pageSize,
     errorMessage,
+    newLink,
   } = props;
 
   const buildQuery = (params?: GroupsSearchParams) => ({
@@ -118,6 +121,14 @@ export default function DataTable(props: GroupsTableProps) {
             <RotateCcwSquare className="h-4 w-4" />
           </Link>
         </Button>
+        {newLink && (
+          <Button asChild className="ml-2">
+            <Link href={newLink}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              New
+            </Link>
+          </Button>
+        )}
       </div>
       <div className="rounded-md border">
         <Table>

@@ -1,6 +1,9 @@
-import { DependencyList, useEffect, useState } from 'react';
-import buildQuery from './buildQuery';
+'use client';
+
+import { DependencyList, useEffect, useState, useRef } from 'react';
 import _ from 'lodash';
+import { QueryResultRow } from 'pg';
+import buildQuery from './buildQuery';
 
 interface UseQueryOptions {
   dependencies?: DependencyList;
@@ -9,6 +12,11 @@ interface UseQueryOptions {
   debug?: boolean;
 }
 
+export type Result<T extends QueryResultRow> = ReturnType<typeof buildQuery<T>>;
+export type ExecuteFunc<T extends QueryResultRow> =
+  | ((...args: unknown[]) => Result<T>)
+  | _.DebouncedFunc<(...args: unknown[]) => Result<T>>;
+
 /**
  * Turn async server actions into react hooks for use in client-side components.
  *
@@ -16,8 +24,8 @@ interface UseQueryOptions {
  * @param options - options object specifying the behavior of the hook
  * @returns
  */
-export default function useQuery<T>(
-  query: () => ReturnType<typeof buildQuery>,
+export default function useQuery<T extends QueryResultRow>(
+  query: (...args: unknown[]) => Result<T>,
   options?: UseQueryOptions,
 ): {
   loading: boolean;
@@ -25,13 +33,7 @@ export default function useQuery<T>(
     rows: T[];
     rowCount: number;
   } | null;
-  execute: () => Promise<{
-    data: {
-      rows: T[];
-      rowCount: number;
-    } | null;
-    errorMessage: string | null;
-  }>;
+  execute: ExecuteFunc<T>;
   errorMessage: string | null;
 } {
   const [loading, setLoading] = useState<boolean>(false);
@@ -41,48 +43,49 @@ export default function useQuery<T>(
   } | null>(null);
   const [errorMessage, setError] = useState<string | null>(null);
 
-  const execute = () => {
+  const execute: ExecuteFunc<T> = async (...args) => {
+    console.log({ args });
     setError(null);
     setLoading(true);
-    return query()
-      .then((queryResult) => {
-        setData(
-          queryResult.data as {
-            rows: T[];
-            rowCount: number;
-          },
-        );
+    try {
+      const queryResult = await query(...args);
+      setData(
+        queryResult.data as {
+          rows: T[];
+          rowCount: number;
+        },
+      );
 
-        if (queryResult.errorMessage) {
-          setError(queryResult.errorMessage);
-        }
-        setLoading(false);
-
-        return {
-          data:
-            (queryResult.data as {
-              rows: T[];
-              rowCount: number;
-            }) || null,
-          errorMessage: queryResult.errorMessage,
-        };
-      })
-      .catch((e) => {
-        if (e instanceof Error) {
-          setError(e.message);
-        }
-        setLoading(false);
-        return {
-          data: null,
-          errorMessage: e.message,
-        };
-      });
+      if (queryResult.errorMessage) {
+        setError(queryResult.errorMessage);
+      }
+      setLoading(false);
+      return queryResult;
+    } catch (e) {
+      if (e instanceof Error) {
+        setError(e.message);
+      }
+      setLoading(false);
+      return {
+        data: null,
+        errorMessage: e instanceof Error ? e.message : 'Unknown Error',
+      };
+    }
   };
+  const {
+    current: { debouncedExecute },
+  } = useRef({
+    debouncedExecute: _.debounce(
+      (...args) => execute(...args),
+      options?.debounce,
+    ),
+  });
+  // const debouncedExecute = _.debounce(execute, options?.debounce);
 
   useEffect(() => {
     if (options?.initialize) {
       if (options?.debounce) {
-        _.debounce(execute, options.debounce)();
+        debouncedExecute();
       } else {
         execute();
       }
@@ -103,13 +106,7 @@ export default function useQuery<T>(
   return {
     loading,
     data,
-    execute: execute as () => Promise<{
-      data: {
-        rows: T[];
-        rowCount: number;
-      } | null;
-      errorMessage: string | null;
-    }>,
+    execute: options?.debounce ? debouncedExecute : execute,
     errorMessage,
   };
 }

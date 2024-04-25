@@ -1,8 +1,6 @@
 import _ from 'lodash';
 import Link from 'next/link';
 
-import buildQuery from '~/libs/buildQuery';
-import sql from '~/libs/db';
 import {
   Card,
   CardContent,
@@ -14,41 +12,12 @@ import { PAGE_SIZE } from '~/config';
 import formatCellContent from '~/libs/formatCellContent';
 import { NODES_CARDS_CONFIG } from '~/components/NodesGrowthCards';
 import Button from '~/components/Button';
+import queryGroupChildren from '~/actions/queryGroupChildren';
 
 interface GroupsMembersListProps {
   parent_id: string;
   page?: number;
 }
-
-interface QueryGroupChildrenArgs {
-  parent_id: string;
-  page?: number;
-}
-interface UserOrGroup {
-  id: string;
-  name: string;
-  created_at: Date;
-  type: 'user' | 'group';
-}
-
-const queryGroupChildren = async ({
-  parent_id,
-  page,
-}: QueryGroupChildrenArgs) =>
-  buildQuery<UserOrGroup>(
-    sql,
-    `
-      select
-          id,
-          name,
-          created_at,
-          type
-      from ${process.env.PUBLIC_SCHEMA}.recent_nodes_view
-      where parent_id = '${parent_id}' and (type = 'group' or type = 'user')
-      limit ${PAGE_SIZE}
-      offset ${page || 0}
-    `,
-  );
 
 export default async function GroupsMembersList(props: GroupsMembersListProps) {
   const { parent_id, page } = props;
@@ -58,12 +27,14 @@ export default async function GroupsMembersList(props: GroupsMembersListProps) {
     return <div className="text-error">{errorMessage}</div>;
   }
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Group Members</CardTitle>
-        <CardContent className="py-6 px-0">
+    <Card className="flex flex-col justify-between">
+      <div>
+        <CardHeader>
+          <CardTitle>Group Members</CardTitle>
+        </CardHeader>
+        <CardContent className="px-6 pb-6">
           <div className="grid gap-1">
-            {data.rowCount === 0 && (
+            {data?.rowCount === 0 && (
               <>
                 <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
                   <div className="space-y-1">
@@ -75,8 +46,8 @@ export default async function GroupsMembersList(props: GroupsMembersListProps) {
                 <div className="flex h-20" />
               </>
             )}
-            {data.rowCount > 0 &&
-              _.map(data.rows, (r) => {
+            {(data?.rowCount || 0) > 0 &&
+              _.map(data?.rows, (r) => {
                 const Icon = NODES_CARDS_CONFIG[r.type];
                 return (
                   <div
@@ -99,15 +70,23 @@ export default async function GroupsMembersList(props: GroupsMembersListProps) {
               })}
           </div>
         </CardContent>
-        <CardFooter className="px-0 space-x-2 justify-end">
-          <Button variant="outline" disabled={!page || page === 0}>
-            Previous
-          </Button>
-          <Button variant="outline" disabled={data.rowCount !== PAGE_SIZE}>
-            Next
-          </Button>
-        </CardFooter>
-      </CardHeader>
+      </div>
+      <CardFooter className="space-x-2 justify-end">
+        <Button
+          variant="outline"
+          disabled={!page || page === 0}
+          asChild={!(!page || page === 0)}
+        >
+          <Link href={{ query: { page: (page || 0) - 1 } }}>Previous</Link>
+        </Button>
+        <Button
+          variant="outline"
+          disabled={data?.rowCount !== PAGE_SIZE}
+          asChild={data?.rowCount === PAGE_SIZE}
+        >
+          <Link href={{ query: { page: (page || 1) + 1 } }}>Next</Link>
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

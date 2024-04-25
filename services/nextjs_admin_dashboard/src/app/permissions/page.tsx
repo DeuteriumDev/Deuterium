@@ -1,51 +1,80 @@
 import _ from 'lodash';
-import queryPermissions from '~/actions/queryPermissions';
-import DataTable from '~/components/DataTable';
-import { PAGE_SIZE } from '~/config';
 
-interface PermissionsPageProps {
+import queryPermissions from '~/actions/queryPermissions';
+import upsertPermission from '~/actions/upsertPermission';
+import Button from '~/components/Button';
+import { Card, CardDescription, CardHeader } from '~/components/Card';
+import PermissionForm from '~/components/PermissionForm';
+import { Permission } from '~/libs/types';
+import GroupsListRouter from '~/components/GroupsListRouter';
+import DocumentsListRouter from '~/components/DocumentsListRouter';
+
+interface GroupPageProps {
   searchParams: {
-    page: string;
-    hiddenColumns: string[];
-    orderBy: string;
-    orderDir: string;
-    where: string;
+    groups_id?: string;
+    documents_id?: string;
+    permissions_page?: string;
   };
 }
 
-const columns = ['group_name', 'crud', 'created_at', 'document_name'];
-export default async function Permissions(props: PermissionsPageProps) {
+export default async function PermissionsPage(props: GroupPageProps) {
   const {
-    searchParams: {
-      page = 0,
-      hiddenColumns = [],
-      orderBy = '',
-      orderDir = '',
-      where = '',
-    },
+    searchParams: { groups_id, documents_id },
   } = props;
 
-  const permissions = await queryPermissions({
-    page: Number(page),
-    orderBy,
-    orderDir,
-    where,
-  });
+  let permissionsQuery;
+  let permissions: Permission[] = [];
+  if (documents_id && !groups_id) {
+    permissionsQuery = await queryPermissions(
+      { page: 0, where: `foreign_id = $1` },
+      [documents_id],
+    );
+    permissions = permissionsQuery.data?.rows || [];
+  } else if (!documents_id && groups_id) {
+    const permissionsQuery = await queryPermissions(
+      { page: 0, where: `group_id = $1` },
+      [groups_id],
+    );
+    permissions = permissionsQuery.data?.rows || [];
+  } else if (documents_id && groups_id) {
+    const permissionsQuery = await queryPermissions(
+      { page: 0, where: `group_id = $1 and foreign_id = $2` },
+      [groups_id, documents_id],
+    );
+    permissions = permissionsQuery.data?.rows || [];
+  } else {
+    permissions = [];
+  }
+
+  const _handleNew = async () => {
+    if (groups_id && groups_id) {
+      await upsertPermission({
+        group_id: groups_id,
+        document_id: documents_id,
+      });
+    }
+  };
 
   return (
     <div>
-      <h2 className="ml-1 text-2xl font-bold tracking-tight">Permissions</h2>
-      <DataTable
-        page={Number(page)}
-        hiddenColumns={_.castArray(hiddenColumns)}
-        orderBy={orderBy}
-        orderDir={orderDir}
-        where={where}
-        columns={columns}
-        pageSize={PAGE_SIZE}
-        rows={permissions.data?.rows}
-        errorMessage={permissions.errorMessage}
-      />
+      <div className="grid grid-cols-2 gap-8 py-8">
+        <GroupsListRouter pathRoot="/permissions" />
+        <DocumentsListRouter pathRoot="/permissions" />
+      </div>
+      {!_.isEmpty(permissions) &&
+        _.map(permissions, (p) => <PermissionForm key={p.id} permission={p} />)}
+      {!documents_id && !groups_id && (
+        <Card>
+          <CardHeader>
+            <CardDescription className="text-center">
+              Select a group and / or document to view it&apos;s permissions
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
+      {/* {documents_id && groups_id && _.isEmpty(permissions) && (
+        <Button onClick={_handleNew}>New Permission</Button>
+      )} */}
     </div>
   );
 }

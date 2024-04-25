@@ -2,14 +2,19 @@
 
 import buildQuery from '~/libs/buildQuery';
 import sql from '~/libs/db';
-import { Group } from '~/libs/types';
-
 import { PAGE_SIZE } from '~/config';
 
 interface QueryGroupChildrenArgs {
-  id: string;
+  parent_id: string;
   page?: number;
   where?: string;
+}
+
+export interface UserOrGroup {
+  id: string;
+  name: string;
+  created_at: Date;
+  type: 'user' | 'group';
 }
 
 /**
@@ -18,20 +23,24 @@ interface QueryGroupChildrenArgs {
  * @param param0 Filter results according to id (parent_id) a where statement and page
  * @returns
  */
-const queryGroupChildren = async ({
-  id,
-  page,
-  where,
-}: QueryGroupChildrenArgs) =>
-  buildQuery<Group>(
+const queryGroupChildren = async (
+  { parent_id, page, where }: QueryGroupChildrenArgs,
+  params?: unknown[],
+) =>
+  buildQuery<UserOrGroup>(
     sql,
     `
-      select *
-      from ${process.env.PUBLIC_SCHEMA}.groups_view
-      where not ('${id}' = any (path_ids)) and id != '${id}' ${where ? `and ${where}` : ''}
+      select
+          id,
+          name,
+          created_at,
+          type
+      from ${process.env.PUBLIC_SCHEMA}.recent_nodes_view
+      where parent_id = '${parent_id}' and (type = 'group' or type = 'user') ${where ? `and ${where}` : ''}
       limit ${PAGE_SIZE}
-      ${page ? `offset ${page * PAGE_SIZE}` : ''}
+      offset ${page || 0}
     `,
+    params,
   );
 
 export default queryGroupChildren;

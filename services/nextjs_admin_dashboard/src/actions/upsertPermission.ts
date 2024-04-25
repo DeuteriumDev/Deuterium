@@ -1,20 +1,26 @@
+'use server';
+
 import _ from 'lodash';
-import { revalidatePath } from 'next/cache';
 
 import buildQuery from '~/libs/buildQuery';
 import sql from '~/libs/db';
 import castValueToSQL from '~/libs/castValueToSQL';
 import { Permission } from '~/libs/types';
 
-interface UpsertPermissionArgs {
-  id?: string;
+type UpsertPermissionArgsNew = {
   group_id: string;
   document_id: string;
   can_create?: boolean;
   can_read?: boolean;
   can_update?: boolean;
   can_delete?: boolean;
-}
+};
+
+type UpsertPermissionArgsID = {
+  id: string;
+} & Partial<UpsertPermissionArgsNew>;
+
+type UpsertPermissionArgs = UpsertPermissionArgsID | UpsertPermissionArgsNew;
 
 /**
  * Insert of update a given permission. CRUDs default to all true;
@@ -37,10 +43,6 @@ async function upsertPermission(args: UpsertPermissionArgs) {
        returning *
       `,
     _.values(args),
-  );
-
-  _.forEach(['/permissions', `/groups/${args.group_id}`], (p) =>
-    revalidatePath(p),
   );
 
   return results;

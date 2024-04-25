@@ -138,7 +138,7 @@ create table {{ public_schema }}.document_permissions (
     can_read boolean default true not null,
     can_update boolean default true not null,
     can_delete boolean default true not null,
-    document_id uuid,
+    document_id uuid not null,
     group_id uuid NOT NULL
 );
 

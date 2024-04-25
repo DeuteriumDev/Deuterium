@@ -23,21 +23,24 @@ export type QueryGroupArgs =
   | QueryGroupOrderArgs
   | QueryGroupWhereArgs;
 
-const queryGroups = async (args: QueryGroupArgs) =>
+const queryGroups = async (query: QueryGroupArgs, params?: unknown[]) =>
   await buildQuery<Group>(
     sql,
     `
       select
         id,
+        name as _name,
         '[' || name || '](/groups/' || id || ')' as name,
+        path_names[1] as _parent_name,
         '[' || path_names[1] || '](/groups/' || path_ids[1] || ')' as parent_name,
         created_at
       from ${process.env.PUBLIC_SCHEMA}.groups_view
-      ${(args as QueryGroupWhereArgs).where ? `where ${(args as QueryGroupWhereArgs).where}` : ''}
-      ${(args as QueryGroupOrderArgs).orderBy && (args as QueryGroupOrderArgs).orderBy ? `order by ${(args as QueryGroupOrderArgs).orderBy} ${(args as QueryGroupOrderArgs).orderDir}` : ''}
+      ${(query as QueryGroupWhereArgs).where ? `where ${(query as QueryGroupWhereArgs).where}` : ''}
+      ${(query as QueryGroupOrderArgs).orderBy && (query as QueryGroupOrderArgs).orderBy ? `order by ${(query as QueryGroupOrderArgs).orderBy} ${(query as QueryGroupOrderArgs).orderDir}` : ''}
       limit ${PAGE_SIZE}
-      offset ${args.page * PAGE_SIZE}
+      offset ${query.page * PAGE_SIZE}
     `,
+    params,
   );
 
 export default queryGroups;

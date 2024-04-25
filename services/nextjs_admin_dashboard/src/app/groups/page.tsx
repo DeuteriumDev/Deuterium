@@ -46,6 +46,7 @@ export default async function GroupsPage(props: GroupPageProps) {
         pageSize={PAGE_SIZE}
         rows={queryGroupsResult.data?.rows}
         errorMessage={queryGroupsResult.errorMessage}
+        newLink="/groups/new"
       />
     </div>
   );
