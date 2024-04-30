@@ -1,13 +1,17 @@
+'use server';
 import _ from 'lodash';
 
 import queryPermissions from '~/actions/queryPermissions';
-import upsertPermission from '~/actions/upsertPermission';
-import Button from '~/components/Button';
 import { Card, CardDescription, CardHeader } from '~/components/Card';
 import PermissionForm from '~/components/PermissionForm';
 import { Permission } from '~/libs/types';
 import GroupsListRouter from '~/components/GroupsListRouter';
 import DocumentsListRouter from '~/components/DocumentsListRouter';
+import PermissionNewButton from '~/components/PermissionNewButton';
+import upsertPermission from '~/actions/upsertPermission';
+import deletePermission from '~/actions/deletePermission';
+import queryGroups from '~/actions/queryGroups';
+import queryDocuments from '~/actions/queryDocuments';
 
 interface GroupPageProps {
   searchParams: {
@@ -26,7 +30,7 @@ export default async function PermissionsPage(props: GroupPageProps) {
   let permissions: Permission[] = [];
   if (documents_id && !groups_id) {
     permissionsQuery = await queryPermissions(
-      { page: 0, where: `foreign_id = $1` },
+      { page: 0, where: `document_id = $1` },
       [documents_id],
     );
     permissions = permissionsQuery.data?.rows || [];
@@ -38,7 +42,7 @@ export default async function PermissionsPage(props: GroupPageProps) {
     permissions = permissionsQuery.data?.rows || [];
   } else if (documents_id && groups_id) {
     const permissionsQuery = await queryPermissions(
-      { page: 0, where: `group_id = $1 and foreign_id = $2` },
+      { page: 0, where: `group_id = $1 and document_id = $2` },
       [groups_id, documents_id],
     );
     permissions = permissionsQuery.data?.rows || [];
@@ -46,23 +50,31 @@ export default async function PermissionsPage(props: GroupPageProps) {
     permissions = [];
   }
 
-  const _handleNew = async () => {
-    if (groups_id && groups_id) {
-      await upsertPermission({
-        group_id: groups_id,
-        document_id: documents_id,
-      });
-    }
-  };
-
   return (
     <div>
       <div className="grid grid-cols-2 gap-8 py-8">
-        <GroupsListRouter pathRoot="/permissions" />
-        <DocumentsListRouter pathRoot="/permissions" />
+        <GroupsListRouter pathRoot="/permissions" queryGroups={queryGroups} />
+        <DocumentsListRouter
+          pathRoot="/permissions"
+          queryDocuments={queryDocuments}
+        />
       </div>
-      {!_.isEmpty(permissions) &&
-        _.map(permissions, (p) => <PermissionForm key={p.id} permission={p} />)}
+      {!_.isEmpty(permissions) && (
+        <Card>
+          <CardHeader>
+            <CardDescription className="text-center">
+              {_.map(permissions, (p) => (
+                <PermissionForm
+                  key={p.id}
+                  permission={p}
+                  upsertPermission={upsertPermission}
+                  deletePermission={deletePermission}
+                />
+              ))}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
       {!documents_id && !groups_id && (
         <Card>
           <CardHeader>
@@ -72,9 +84,19 @@ export default async function PermissionsPage(props: GroupPageProps) {
           </CardHeader>
         </Card>
       )}
-      {/* {documents_id && groups_id && _.isEmpty(permissions) && (
-        <Button onClick={_handleNew}>New Permission</Button>
-      )} */}
+      {documents_id && groups_id && _.isEmpty(permissions) && (
+        <Card>
+          <CardHeader>
+            <CardDescription className="text-center">
+              <PermissionNewButton
+                upsertPermission={upsertPermission}
+                groups_id={groups_id}
+                documents_id={documents_id}
+              />
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
     </div>
   );
 }

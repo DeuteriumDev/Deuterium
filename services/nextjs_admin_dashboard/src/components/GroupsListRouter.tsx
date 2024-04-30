@@ -26,10 +26,11 @@ const ID_PARAM = 'groups_id';
 
 interface GroupsListRouterProps {
   pathRoot: string;
+  queryGroups: typeof queryGroups;
 }
 
 export default function GroupsListRouter(props: GroupsListRouterProps) {
-  const { pathRoot } = props;
+  const { pathRoot, queryGroups } = props;
   const url = useUrl();
   const router = useRouter();
   const [selected, setSelected] = useState<string | null>(

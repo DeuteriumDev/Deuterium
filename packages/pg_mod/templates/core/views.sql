@@ -202,7 +202,8 @@ grant select on {{ public_schema }}.document_permissions_view to {{ authenticate
 
 create view {{ public_schema }}.documents_view as 
   select 
-    f.id,
+    d.id,
+    f.id as foreign_id,
     f.name as name,
     d.created_at,
     d.type as type

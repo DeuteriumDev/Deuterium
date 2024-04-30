@@ -26,10 +26,11 @@ const ID_PARAM = 'documents_id';
 
 interface DocumentsListRouterProps {
   pathRoot: string;
+  queryDocuments: typeof queryDocuments;
 }
 
 export default function DocumentsListRouter(props: DocumentsListRouterProps) {
-  const { pathRoot } = props;
+  const { pathRoot, queryDocuments } = props;
   const url = useUrl();
   const router = useRouter();
   const [selected, setSelected] = useState<string | null>(

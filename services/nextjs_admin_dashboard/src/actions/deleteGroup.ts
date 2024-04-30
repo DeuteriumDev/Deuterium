@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import buildQuery from '~/libs/buildQuery';
 import sql from '~/libs/db';
 import { Group } from '~/libs/types';
+import { Result } from '~/libs/useQuery';
 
 /**
  *
@@ -14,13 +15,6 @@ import { Group } from '~/libs/types';
  * @returns
  */
 const deleteGroup = async ({ id }: { id: string }) => {
-  const result1 = await buildQuery<Group>(
-    sql,
-    `
-      delete from ${process.env.PUBLIC_SCHEMA}.groups where id = $1 returning *
-    `,
-    [id],
-  );
   const result2 = await buildQuery<Group>(
     sql,
     `
@@ -28,10 +22,17 @@ const deleteGroup = async ({ id }: { id: string }) => {
     `,
     [id],
   );
+  const result1 = await buildQuery<Group>(
+    sql,
+    `
+      delete from ${process.env.PUBLIC_SCHEMA}.groups where id = $1 returning *
+    `,
+    [id],
+  );
 
   _.forEach(
     _.concat(
-      _.map(result2.data.rows, (r) => `/users/${r.user_id}`),
+      _.map(result2.data?.rows, (r) => `/users/${r.user_id}`),
       '/users',
       '/groups',
       `/groups/${id}`,
@@ -41,11 +42,11 @@ const deleteGroup = async ({ id }: { id: string }) => {
 
   return {
     data: {
-      rows: [...result1.data.rows, result2.data.rows],
-      rowCount: result1.data.rowCount + result1.data.rowCount,
+      rows: [...(result1.data?.rows || []), result2.data?.rows],
+      rowCount: (result1.data?.rowCount || 0) + (result1.data?.rowCount || 0),
     },
     errorMessage: result1.errorMessage || result2.errorMessage,
-  };
+  } as unknown as Result<Group>;
 };
 
 export default deleteGroup;
