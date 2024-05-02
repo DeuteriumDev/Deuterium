@@ -6,7 +6,9 @@ import Link from 'next/link';
 
 import Button from '~/components/Button';
 import { Table, TableBody, TableCell, TableRow } from '~/components/Table';
-import sql from '~/lib/db';
+import sql from '~/libs/db';
+import formatCellContent from '~/libs/formatCellContent';
+import buildQuery from '~/libs/buildQuery';
 
 export type Node = {
   id: string;
@@ -18,60 +20,63 @@ export type Node = {
 const PAGE_SIZE = 10;
 const TABLE_COLS = ['name', 'type', 'created_at'] as (keyof Node)[];
 
-interface RecentActivityTableProps {
+interface NodesRecentActivityTableProps {
   page: number;
 }
 
-export async function queryRecentNodes(client: typeof sql, page: number) {
-  const data = await client<Node>(`
-    select *
-    from public.recent_nodes_view
-    limit ${PAGE_SIZE}
-    offset ${page * PAGE_SIZE}
-  `);
+const queryRecentNodes = async ({ page }: { page: number }) =>
+  buildQuery<Node>(
+    sql,
+    `
+select 
+  id,
+  '[' || name || '](/' || type || 's/' || id || ')' as name,
+  type,
+  created_at
+from ${process.env.PUBLIC_SCHEMA}.recent_nodes_view
+limit ${PAGE_SIZE}
+offset ${page * PAGE_SIZE}
+`,
+  );
 
-  return {
-    data: _.map(data?.rows, (d) => ({
-      id: d.id,
-      name: (
-        <Link href={`/node/${d.type}/${d.id}`} className="underline">
-          {d.name}
-        </Link>
-      ),
-      type: d.type,
-      created_at: d.created_at.toISOString(),
-    })),
-    total: data?.rowCount || 0,
-  };
-}
-
-export default async function RecentActivityTable(
-  props: RecentActivityTableProps,
+export default async function NodesRecentActivityTable(
+  props: NodesRecentActivityTableProps,
 ) {
   const { page = 0 } = props;
-  const { data, total } = await queryRecentNodes(sql, page);
+  const { data, errorMessage } = await queryRecentNodes({ page });
 
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
         <h2 className="ml-1 text-2xl font-bold tracking-tight">
-          Recently Created Nodes
+          Recently Created
         </h2>
       </div>
       <div className="rounded-md border">
         <Table>
           <TableBody>
-            {data ? (
-              _.map(data, (d) => (
+            {errorMessage && (
+              <TableRow>
+                <TableCell
+                  colSpan={TABLE_COLS.length}
+                  className="h-24 text-center text-error"
+                >
+                  {errorMessage}
+                </TableCell>
+              </TableRow>
+            )}
+            {!errorMessage &&
+              data.rows &&
+              _.map(data.rows, (d) => (
                 <TableRow key={d.id}>
                   {_.map(TABLE_COLS, (colName) => (
                     <TableCell key={`${d.id}-${colName}`}>
-                      {d[colName]}
+                      {formatCellContent(d[colName])}
                     </TableCell>
                   ))}
                 </TableRow>
-              ))
-            ) : (
+              ))}
+            {!errorMessage && data.rowCount === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={TABLE_COLS.length}
@@ -97,8 +102,8 @@ export default async function RecentActivityTable(
           <Button
             variant="outline"
             size="sm"
-            disabled={total < (page + 1) * PAGE_SIZE}
-            asChild={total > (page + 1) * PAGE_SIZE}
+            disabled={data.rowCount < (page + 1) * PAGE_SIZE}
+            asChild={data.rowCount > (page + 1) * PAGE_SIZE}
           >
             <Link href={`/dashboard?page=${page + 1}`}>Next</Link>
           </Button>

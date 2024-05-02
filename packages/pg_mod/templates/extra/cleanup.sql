@@ -33,6 +33,7 @@ drop policy if exists {{ public_schema }}_folders_read ON {{ public_schema }}.fo
 drop policy if exists {{ public_schema }}_folders_update ON {{ public_schema }}.folders;
 drop policy if exists {{ public_schema }}_folders_delete ON {{ public_schema }}.folders;
 
+drop view if exists {{ public_schema }}.groups_view;
 drop view if exists {{ public_schema }}.recent_nodes_view;
 drop view if exists {{ public_schema }}.node_growth_view;
 drop view if exists {{ public_schema }}.document_permissions_view;

@@ -27,14 +27,10 @@ import {
   TableRow,
 } from '~/components/Table';
 import NodesFilterForm from '~/components/NodesFilterForm';
-import sql from '~/lib/db';
-
-export interface Document {
-  id: string;
-  type: string;
-  name: string;
-  created_at: Date;
-}
+import sql from '~/libs/db';
+import type { Document } from '~/libs/types';
+import formatCellContent from '~/libs/formatCellContent';
+import buildQuery from '~/libs/buildQuery';
 
 const PAGE_SIZE = 10;
 
@@ -56,36 +52,22 @@ type QueryDocumentArgs =
   | QueryDocumentOrderArgs
   | QueryDocumentWhereArgs;
 
-export async function queryPermissions(
-  client: typeof sql,
-  args: QueryDocumentArgs,
-) {
-  const { page } = args;
-  const { orderBy, orderDir } = args as QueryDocumentOrderArgs;
-  const { where } = args as QueryDocumentWhereArgs;
-
-  let data = { rows: [] as Document[], rowCount: 0 };
-  let errorMessage;
-  try {
-    data = await client<Document>(`
-      select *
-      from documents_view
-      ${where ? `where ${where}` : ''}
-      ${orderBy && orderBy ? `order by ${orderBy} ${orderDir}` : ''}
+const queryDocuments = async (args: QueryDocumentArgs) =>
+  buildQuery<Document>(
+    sql,
+    `
+      select
+        id,
+        '[' || name || '](/nodes/' || type || 's/' || id || ')' as name,
+        type,
+        created_at
+      from ${process.env.PUBLIC_SCHEMA}.documents_view
+      ${(args as QueryDocumentWhereArgs).where ? `where ${(args as QueryDocumentWhereArgs).where}` : ''}
+      ${(args as QueryDocumentOrderArgs).orderBy && (args as QueryDocumentOrderArgs).orderBy ? `order by ${(args as QueryDocumentOrderArgs).orderBy} ${(args as QueryDocumentOrderArgs).orderDir}` : ''}
       limit ${PAGE_SIZE}
-      offset ${page * PAGE_SIZE}
-    `);
-  } catch (error) {
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-  }
-
-  return {
-    data,
-    errorMessage,
-  };
-}
+      offset ${args.page * PAGE_SIZE}
+    `,
+  );
 
 const columns: (keyof Document)[] = ['name', 'created_at', 'type'];
 
@@ -107,7 +89,7 @@ export default async function DocumentsTable(props: DocumentsTableProps) {
     orderBy = '',
     where = '',
   } = props;
-  const { data, errorMessage } = await queryPermissions(sql, {
+  const { data, errorMessage } = await queryDocuments({
     page,
     orderBy,
     orderDir,
@@ -133,16 +115,6 @@ export default async function DocumentsTable(props: DocumentsTableProps) {
       }
     }
     return null;
-  };
-
-  const formatCell = (cell: unknown): string => {
-    if (cell instanceof Date) {
-      return (cell as Date).toUTCString();
-    } else if (typeof cell === 'boolean') {
-      return cell.toString();
-    }
-
-    return cell as string;
   };
 
   return (
@@ -228,7 +200,7 @@ export default async function DocumentsTable(props: DocumentsTableProps) {
                     _.without(columns, ...hiddenColumns),
                     (column: keyof Document) => (
                       <TableCell key={`cell-${column}-${row.id}`}>
-                        {formatCell(row[column])}
+                        {formatCellContent(row[column])}
                       </TableCell>
                     ),
                   )}

@@ -2,15 +2,15 @@
 
 import { Suspense } from 'react';
 
-import NodeGrowthCards from '~/components/NodeGrowthCards';
-
-import RecentActivityTable from '~/components/RecentActivityTable';
-import NodeGrowthCardsSkeleton from '~/components/NodeGrowthCardsSkeleton';
+import NodesGrowthCards from '~/components/NodesGrowthCards';
+import NodesRecentActivityTable from '~/components/NodesRecentActivityTable';
+import NodesGrowthCardsSkeleton from '~/components/NodesGrowthCardsSkeleton';
 import TableSkeleton from '~/components/TableSkeleton';
 
 interface DashboardProps {
   searchParams: { page: string };
 }
+
 export default async function Dashboard(props: DashboardProps) {
   const {
     searchParams: { page = 0 },
@@ -18,11 +18,11 @@ export default async function Dashboard(props: DashboardProps) {
 
   return (
     <div>
-      <Suspense fallback={<NodeGrowthCardsSkeleton />}>
-        <NodeGrowthCards />
+      <Suspense fallback={<NodesGrowthCardsSkeleton />}>
+        <NodesGrowthCards />
       </Suspense>
       <Suspense fallback={<TableSkeleton />}>
-        <RecentActivityTable page={Number(page)} />
+        <NodesRecentActivityTable page={Number(page)} />
       </Suspense>
     </div>
   );

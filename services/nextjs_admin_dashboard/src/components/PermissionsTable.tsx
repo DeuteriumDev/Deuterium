@@ -27,19 +27,10 @@ import {
   TableRow,
 } from '~/components/Table';
 import NodesFilterForm from '~/components/NodesFilterForm';
-import sql from '~/lib/db';
-
-export interface Permission {
-  id: string;
-  can_create: boolean;
-  can_read: boolean;
-  can_update: boolean;
-  can_delete: boolean;
-  created_at: Date;
-  group_name: string;
-  document_type: string;
-  document_name: string;
-}
+import sql from '~/libs/db';
+import type { Permission } from '~/libs/types';
+import formatCellContent from '~/libs/formatCellContent';
+import buildQuery from '~/libs/buildQuery';
 
 const PAGE_SIZE = 10;
 
@@ -61,36 +52,27 @@ type QueryGroupArgs =
   | QueryGroupOrderArgs
   | QueryGroupWhereArgs;
 
-export async function queryPermissions(
-  client: typeof sql,
-  args: QueryGroupArgs,
-) {
-  const { page } = args;
-  const { orderBy, orderDir } = args as QueryGroupOrderArgs;
-  const { where } = args as QueryGroupWhereArgs;
-
-  let data = { rows: [] as Permission[], rowCount: 0 };
-  let errorMessage;
-  try {
-    data = await client<Permission>(`
-      select *
-      from document_permissions_view
-      ${where ? `where ${where}` : ''}
-      ${orderBy && orderBy ? `order by ${orderBy} ${orderDir}` : ''}
+const queryPermissions = async (args: QueryGroupArgs) =>
+  buildQuery<Permission>(
+    sql,
+    `
+      select
+        id,
+        can_create,
+        can_read,
+        can_update,
+        can_delete,
+        created_at,
+        '[' || group_name || '](/nodes/groups/' || group_id || ')' as group_name,
+        document_type,
+        '[' || document_name || '](/nodes/' || document_type || 's/' || document_id || ')' as document_name
+      from ${process.env.PUBLIC_SCHEMA}.document_permissions_view
+      ${(args as QueryGroupWhereArgs).where ? `where ${(args as QueryGroupWhereArgs).where}` : ''}
+      ${(args as QueryGroupOrderArgs).orderBy && (args as QueryGroupOrderArgs).orderBy ? `order by ${(args as QueryGroupOrderArgs).orderBy} ${(args as QueryGroupOrderArgs).orderDir}` : ''}
       limit ${PAGE_SIZE}
-      offset ${page * PAGE_SIZE}
-    `);
-  } catch (error) {
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-  }
-
-  return {
-    data,
-    errorMessage,
-  };
-}
+      offset ${(args as QueryGroupArgs).page * PAGE_SIZE}
+    `,
+  );
 
 const columns: (keyof Permission)[] = [
   'group_name',
@@ -120,7 +102,7 @@ export default async function GroupsTable(props: GroupsTableProps) {
     orderBy = '',
     where = '',
   } = props;
-  const { data, errorMessage } = await queryPermissions(sql, {
+  const { data, errorMessage } = await queryPermissions({
     page,
     orderBy,
     orderDir,
@@ -146,16 +128,6 @@ export default async function GroupsTable(props: GroupsTableProps) {
       }
     }
     return null;
-  };
-
-  const formatCell = (cell: unknown): string => {
-    if (cell instanceof Date) {
-      return (cell as Date).toUTCString();
-    } else if (typeof cell === 'boolean') {
-      return cell.toString();
-    }
-
-    return cell as string;
   };
 
   return (
@@ -241,7 +213,7 @@ export default async function GroupsTable(props: GroupsTableProps) {
                     _.without(columns, ...hiddenColumns),
                     (column: keyof Permission) => (
                       <TableCell key={`cell-${column}-${row.id}`}>
-                        {formatCell(row[column])}
+                        {formatCellContent(row[column])}
                       </TableCell>
                     ),
                   )}
