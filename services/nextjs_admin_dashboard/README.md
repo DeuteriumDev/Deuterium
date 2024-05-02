@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# NextJS_Admin_Dashboard
 
-## Getting Started
+This application is the dev platform for managing database items on a connected DB. It has admin privileges and can override any permissions or check manually. This is a nextjs app that is packaged and distributed for internal use and should not be exposed on an public net. 
 
-First, run the development server:
+## Getting started
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Install dependencies with `yarn`
+- Add a `<dashboard_root_dir>/.env` file with `DB_CONNECTION=postgresql://postgres:postgres@localhost:54311/postgres` (assuming your using the local docker-compose dev environment)
+- run the project with `yarn dev` and goto [http://localhost:4002/](http://localhost:4002/)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Technologies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- [nextjs](https://nextjs.org/docs) - a React framework for building and maintaining apps
+- [tailwind](https://tailwindcss.com/docs/installation) - a css library for styling
+- [shadcn](https://ui.shadcn.com/docs) - a UI library that downloads components locally from the project's registry
+- [lucide](https://lucide.dev) - the icon library
+- [Cypress](https://docs.cypress.io/api/table-of-contents) - a e2e and component testing lib that runs inside a real browser (TODO: install and setup)
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Component convention
 
-## Learn More
+The convention is as follows:
+- all components will be "name-by-domain" and "PascalCased"
+  - Eg: `AccountDropdown`, `GroupsTable`, `DocumentForm`, etc
+  - format is thus "<Model><UIComponent>"
+    - if the UI Component is multiple words then it goes by usecase
+    - `DropdownItem` or `ItemDropdown` --> "DropdownItem" because it is an "item" of a "dropdown", not a dropdown of an item
+- Each component will be a single file named identical to it's component
+  ```ts
+  // `~/components/AccountDropdown.js`
+  
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+  export default AccountDropdown;
+  ```
+- if a component is refactored to have an external resource (like a helper or util) it will be added to the `~/libs/` dir and named `~/libs/use<ComponentName>`
+- tests for each component will go into `~/components/__tests__` to keep the folder clean and easy to navigate
