@@ -1,6 +1,5 @@
 import _ from 'lodash';
-import { User2, Users, Lock, FileText, LucideIcon } from 'lucide-react';
-import postgres, { Sql } from 'postgres';
+import { User2, Users, Lock, FileText } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/Card';
 import sql from '~/lib/db';
@@ -20,15 +19,15 @@ interface NodeGrowthResult {
   count_this_month: number;
 }
 
-export async function queryNodeGrowths() {
-  let data;
+export async function queryNodeGrowths(client: typeof sql) {
+  let data = null;
   let errorMessage = null;
 
   try {
-    data = await sql<NodeGrowthResult[]>`
+    data = await client<NodeGrowthResult>(`
       select *
       from public.node_growth
-    `;
+    `);
   } catch (e) {
     if (e instanceof Error && e.name === 'PostgresError') {
       errorMessage = `Postgres error: ${e.cause}`;
@@ -44,12 +43,12 @@ export async function queryNodeGrowths() {
 }
 
 export default async function NodeGrowthCards() {
-  const { data, errorMessage } = await queryNodeGrowths();
+  const { data, errorMessage } = await queryNodeGrowths(sql);
 
   return (
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
       {errorMessage && <div>{errorMessage}</div>}
-      {_.map(data, (d) => {
+      {_.map(data?.rows, (d) => {
         const Icon = NODE_CARDS_CONFIG[d.type];
         return (
           <Card key={d.type}>

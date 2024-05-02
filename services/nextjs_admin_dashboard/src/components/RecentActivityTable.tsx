@@ -10,67 +10,28 @@ import sql from '~/lib/db';
 
 export type Node = {
   id: string;
-  name: React.ReactNode;
+  name: string;
   type: 'user' | 'group' | 'permission' | 'document';
-  createdAt: string;
+  created_at: Date;
 };
 
-// const data: Node[] = [
-//   {
-//     id: 'm5gr84i9',
-//     name: 'ken99@yahoo.com',
-//     type: 'user',
-//     createdAt: new Date().toUTCString(),
-//   },
-//   {
-//     id: '3u1reuv4',
-//     name: 'Abe45@gmail.com',
-//     type: 'user',
-//     createdAt: new Date().toUTCString(),
-//   },
-//   {
-//     id: 'derv1ws0',
-//     createdAt: new Date().toUTCString(),
-//     type: 'user',
-//     name: 'Monserrat44@gmail.com',
-//   },
-//   {
-//     id: '5kma53ae',
-//     createdAt: new Date().toUTCString(),
-//     type: 'user',
-//     name: 'Silas22@gmail.com',
-//   },
-//   {
-//     id: 'bhqecj4p',
-//     createdAt: new Date().toUTCString(),
-//     type: 'user',
-//     name: 'carmella@hotmail.com',
-//   },
-// ];
-// const total = data.length;
-
 const PAGE_SIZE = 10;
-const TABLE_COLS = ['name', 'type', 'createdAt'] as (keyof Node)[];
+const TABLE_COLS = ['name', 'type', 'created_at'] as (keyof Node)[];
 
 interface RecentActivityTableProps {
   page: number;
 }
 
-async function queryRecentNodes(page: number) {
-  const conn = await sql.reserve();
-  const data = await conn`
+export async function queryRecentNodes(client: typeof sql, page: number) {
+  const data = await client<Node>(`
     select *
     from public.recent_nodes
-    ${sql`limit ${PAGE_SIZE}`}
-    ${sql`offset ${page * PAGE_SIZE}`}
-  `;
-
-  await conn.release();
-
-  console.log(data);
+    limit ${PAGE_SIZE}
+    offset ${page * PAGE_SIZE}
+  `);
 
   return {
-    data: _.map(data, (d) => ({
+    data: _.map(data?.rows, (d) => ({
       id: d.id,
       name: (
         <Link href={`/node/${d.type}/${d.id}`} className="underline">
@@ -78,9 +39,9 @@ async function queryRecentNodes(page: number) {
         </Link>
       ),
       type: d.type,
-      createdAt: (d.created_at as Date).toISOString(),
-    })) as Node[],
-    total: data.length,
+      created_at: d.created_at.toISOString(),
+    })),
+    total: data?.rowCount || 0,
   };
 }
 
@@ -88,8 +49,8 @@ export default async function RecentActivityTable(
   props: RecentActivityTableProps,
 ) {
   const { page = 0 } = props;
-  const { data, total } = await queryRecentNodes(page);
-  
+  const { data, total } = await queryRecentNodes(sql, page);
+
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
