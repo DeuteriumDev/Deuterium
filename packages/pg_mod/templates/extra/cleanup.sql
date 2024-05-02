@@ -36,6 +36,7 @@ drop policy if exists {{ public_schema }}_folders_delete ON {{ public_schema }}.
 drop view if exists {{ public_schema }}.recent_nodes_view;
 drop view if exists {{ public_schema }}.node_growth_view;
 drop view if exists {{ public_schema }}.document_permissions_view;
+drop view if exists {{ public_schema }}.documents_view;
 
 {% if add_folders -%}
 drop table if exists {{ public_schema }}.folders;

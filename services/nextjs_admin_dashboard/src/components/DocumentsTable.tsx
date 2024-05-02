@@ -29,52 +29,47 @@ import {
 import NodesFilterForm from '~/components/NodesFilterForm';
 import sql from '~/lib/db';
 
-export interface Permission {
+export interface Document {
   id: string;
-  can_create: boolean;
-  can_read: boolean;
-  can_update: boolean;
-  can_delete: boolean;
+  type: string;
+  name: string;
   created_at: Date;
-  group_name: string;
-  document_type: string;
-  document_name: string;
 }
 
 const PAGE_SIZE = 10;
 
-type QueryGroupOrderArgs = {
+type QueryDocumentOrderArgs = {
   page: number;
   orderBy: string;
   orderDir: string;
 };
 
-type QueryGroupWhereArgs = {
+type QueryDocumentWhereArgs = {
   where: string;
   page: number;
 };
 
-type QueryGroupArgs =
+type QueryDocumentArgs =
   | {
       page: number;
     }
-  | QueryGroupOrderArgs
-  | QueryGroupWhereArgs;
+  | QueryDocumentOrderArgs
+  | QueryDocumentWhereArgs;
 
 export async function queryPermissions(
   client: typeof sql,
-  args: QueryGroupArgs,
+  args: QueryDocumentArgs,
 ) {
   const { page } = args;
-  const { orderBy, orderDir } = args as QueryGroupOrderArgs;
-  const { where } = args as QueryGroupWhereArgs;
+  const { orderBy, orderDir } = args as QueryDocumentOrderArgs;
+  const { where } = args as QueryDocumentWhereArgs;
 
-  let data = { rows: [] as Permission[], rowCount: 0 };
+  let data = { rows: [] as Document[], rowCount: 0 };
   let errorMessage;
   try {
-    data = await client<Permission>(`
+    data = await client<Document>(`
       select *
-      from document_permissions_view
+      from documents_view
       ${where ? `where ${where}` : ''}
       ${orderBy && orderBy ? `order by ${orderBy} ${orderDir}` : ''}
       limit ${PAGE_SIZE}
@@ -92,17 +87,9 @@ export async function queryPermissions(
   };
 }
 
-const columns: (keyof Permission)[] = [
-  'group_name',
-  'can_create',
-  'can_read',
-  'can_update',
-  'can_delete',
-  'created_at',
-  'document_name',
-];
+const columns: (keyof Document)[] = ['name', 'created_at', 'type'];
 
-interface GroupsSearchParams {
+interface DocumentsSearchParams {
   hiddenColumns?: string[];
   page?: number;
   orderBy?: string;
@@ -110,9 +97,9 @@ interface GroupsSearchParams {
   where?: string;
 }
 
-interface GroupsTableProps extends Required<GroupsSearchParams> {}
+interface DocumentsTableProps extends Required<DocumentsSearchParams> {}
 
-export default async function GroupsTable(props: GroupsTableProps) {
+export default async function DocumentsTable(props: DocumentsTableProps) {
   const {
     hiddenColumns = [],
     page = 0,
@@ -127,7 +114,7 @@ export default async function GroupsTable(props: GroupsTableProps) {
     where,
   });
 
-  const buildQuery = (params?: GroupsSearchParams) => ({
+  const buildQuery = (params?: DocumentsSearchParams) => ({
     query: {
       hiddenColumns: params?.hiddenColumns || hiddenColumns,
       page: params?.page || page,
@@ -239,7 +226,7 @@ export default async function GroupsTable(props: GroupsTableProps) {
                 <TableRow key={row.id}>
                   {_.map(
                     _.without(columns, ...hiddenColumns),
-                    (column: keyof Permission) => (
+                    (column: keyof Document) => (
                       <TableCell key={`cell-${column}-${row.id}`}>
                         {formatCell(row[column])}
                       </TableCell>

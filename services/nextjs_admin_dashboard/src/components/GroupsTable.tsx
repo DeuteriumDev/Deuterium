@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from '~/components/Table';
-import GroupsFilterForm from '~/components/GroupsFilterForm';
+import NodesFilterForm from '~/components/NodesFilterForm';
 import sql from '~/lib/db';
 
 export interface Group {
@@ -135,7 +135,7 @@ export default async function GroupsTable(props: GroupsTableProps) {
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
-        <GroupsFilterForm query={buildQuery().query} />
+        <NodesFilterForm query={buildQuery().query} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
