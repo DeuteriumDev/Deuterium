@@ -51,6 +51,15 @@ describe('query.spec.js', () => {
         const results = await client.query(`
           select * from folders;
         `);
+        expect(results.rowCount).toEqual(3);
+      });
+
+      it('should return a single child doc as user#1', async () => {
+        await loginAs(1);
+
+        const results = await client.query(`
+          select * from folders f join private.documents d on d.foreign_id = f.id  where d.parent_id = 'fb22ad4d-e0ac-40e4-acf1-69639a73cc8c';
+        `);
         expect(results.rowCount).toEqual(1);
       });
 

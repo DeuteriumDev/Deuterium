@@ -1,0 +1,9 @@
+# create n^3 * 5 nested seeds (10, 50, 100)
+make seed && START=10 STOP=20 SKIP_FORMAT=true ./scripts/compile_sql.sh tests/seeds/postgres_nested_n_seed.sql fixtures/postgres.json | psql postgresql://postgres:postgres@localhost:54311/postgres > ./builds/_postgres_nested_10_seed.txt 2>&1 && make dump && mv out.tar ./tests/seeds/postgres_nested_10_seed.tar
+make seed && START=10 STOP=60 SKIP_FORMAT=true ./scripts/compile_sql.sh tests/seeds/postgres_nested_n_seed.sql fixtures/postgres.json | psql postgresql://postgres:postgres@localhost:54311/postgres > ./builds/_postgres_nested_50_seed.txt 2>&1 && make dump && mv out.tar ./tests/seeds/postgres_nested_50_seed.tar
+make seed && START=10 STOP=110 SKIP_FORMAT=true ./scripts/compile_sql.sh ./tests/seeds/postgres_nested_n_seed.sql fixtures/postgres.json | psql postgresql://postgres:postgres@localhost:54311/postgres > ./builds/_postgres_nested_100_seed.txt 2>&1 && make dump && mv out.tar ./tests/seeds/postgres_nested_100_seed.tar
+
+# create n * 5 flattened seeds (10, 1000, 100k)
+make seed && START=10 STOP=20 SKIP_FORMAT=true ./scripts/compile_sql.sh tests/seeds/postgres_flat_n_seed.sql fixtures/postgres.json | psql postgresql://postgres:postgres@localhost:54311/postgres > ./builds/_postgres_flat_10_seed.txt 2>&1 && make dump && mv out.tar ./tests/seeds/postgres_flat_10_seed.tar
+make seed && START=10 STOP=1010 SKIP_FORMAT=true ./scripts/compile_sql.sh tests/seeds/postgres_flat_n_seed.sql fixtures/postgres.json | psql postgresql://postgres:postgres@localhost:54311/postgres > ./builds/_postgres_flat_1000_seed.txt 2>&1 && make dump && mv out.tar ./tests/seeds/postgres_flat_1000_seed.tar
+make seed && START=10 STOP=100010 SKIP_FORMAT=true ./scripts/compile_sql.sh tests/seeds/postgres_flat_n_seed.sql fixtures/postgres.json | psql postgresql://postgres:postgres@localhost:54311/postgres > ./builds/_postgres_flat_100k_seed.txt 2>&1 && make dump && mv out.tar ./tests/seeds/postgres_flat_100k_seed.tar

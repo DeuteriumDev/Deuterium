@@ -228,21 +228,21 @@ ALTER TABLE {{ public_schema }}.folders ENABLE ROW LEVEL SECURITY;
 create or replace function {{ private_schema }}.{{ public_schema }}_folders_create_check(_id uuid) returns TABLE (id uuid) as $$
     SELECT docs.foreign_id
     FROM {{ private_schema }}.document_user_permissions docs
-    WHERE docs.user_id = {{ private_schema }}.get_user_id()
+    WHERE docs.user_id = (select {{ private_schema }}.get_user_id())
         AND docs.crud_permissions[1] = true
         AND _id = docs.foreign_id;
 $$ LANGUAGE sql VOLATILE;
 
 
 CREATE POLICY {{ public_schema }}_folders_create ON {{ public_schema }}.folders FOR insert to {{ authenticated_roles|join(', ') }} with check (
-    EXISTS(select * from {{ private_schema }}.{{ public_schema }}_folders_create_check(id))
+    EXISTS(select {{ private_schema }}.{{ public_schema }}_folders_create_check(id))
 );
 
 CREATE POLICY {{ public_schema }}_folders_read ON {{ public_schema }}.folders FOR select to {{ authenticated_roles|join(', ') }} USING (
     id in (
         SELECT docs.foreign_id
         FROM {{ private_schema }}.document_user_permissions docs
-        WHERE docs.user_id = {{ private_schema }}.get_user_id()
+        WHERE docs.user_id = (select {{ private_schema }}.get_user_id())
             AND docs.crud_permissions[2] = true
     )
 );
@@ -251,7 +251,7 @@ CREATE POLICY {{ private_schema }}_folders_update ON {{ public_schema }}.folders
     id in (
         SELECT docs.foreign_id
         FROM {{ private_schema }}.document_user_permissions docs
-        WHERE docs.user_id = {{ private_schema }}.get_user_id()
+        WHERE docs.user_id = (select {{ private_schema }}.get_user_id())
             AND docs.crud_permissions[3] = true
     )
 );
@@ -260,7 +260,7 @@ CREATE POLICY {{ private_schema }}_folders_delete ON {{ public_schema }}.folders
     id in (
         SELECT docs.foreign_id
         FROM {{ private_schema }}.document_user_permissions docs
-        WHERE docs.user_id = {{ private_schema }}.get_user_id()
+        WHERE docs.user_id = (select {{ private_schema }}.get_user_id())
             AND docs.crud_permissions[4] = true
     )
 );
