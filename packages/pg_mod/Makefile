@@ -5,11 +5,11 @@ include .env
 export $(shell sed 's/=.*//' .env)
 
 install: ## Install pre-req software
-	@pip3 install j2cli
+	# @pip3 install j2cli
 	@yarn install --immutable
-	@brew install gnuplot
-	@brew install sqlfluff
-	@brew install git-lfs
+	# @brew install gnuplot
+	# @brew install sqlfluff
+	# @brew install git-lfs
 .PHONY: install
 
 builds: ## Build all available framework migrations according to the basic data
@@ -89,7 +89,5 @@ benchmark: ## Run query against current db and record the output timming, print 
 
 tests: ## Run available tests
 	@clear
-	@yarn jest tests/unit/functions.spec.js --detectOpenHandles
-	@yarn jest tests/documents/query.spec.js --detectOpenHandles
-	@yarn jest tests/documents/mutation.spec.js --detectOpenHandles
+	@yarn run jest "tests\/.*\/.*\.spec\.js" --detectOpenHandles
 .PHONY: tests

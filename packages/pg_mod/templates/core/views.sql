@@ -22,10 +22,10 @@ CREATE VIEW {{ private_schema }}.document_user_permissions WITH (security_barrie
     d.type,
     d.foreign_id,
     array[
-      coalesce(p.can_create, false),
-      coalesce(p.can_read, false),
-      coalesce(p.can_update, false),
-      coalesce(p.can_delete, false)
+      p.can_create,
+      p.can_read,
+      p.can_update,
+      p.can_delete
     ] as crud_permissions,
     g.user_id
     
@@ -47,17 +47,17 @@ CREATE VIEW {{ private_schema }}.document_user_permissions WITH (security_barrie
   UNION
     SELECT
       docs.id as document_id,
-      (d.depth + 1),
+      (d.depth + 1) as depth,
       (d.path || docs.id) AS path,
       (d.inherit_path || docs.inherit_permissions_from_parent) AS inherit_path,
       docs.type,
       docs.foreign_id,
       case docs.inherit_permissions_from_parent when true	then
         array[
-          coalesce(docs.crud_permissions[1], d.crud_permissions[1]),
-          coalesce(docs.crud_permissions[2], d.crud_permissions[2]),
-          coalesce(docs.crud_permissions[3], d.crud_permissions[3]),
-          coalesce(docs.crud_permissions[4], d.crud_permissions[4])
+          coalesce(docs.crud_permissions[1], d.crud_permissions[1], false),
+          coalesce(docs.crud_permissions[2], d.crud_permissions[2], false),
+          coalesce(docs.crud_permissions[3], d.crud_permissions[3], false),
+          coalesce(docs.crud_permissions[4], d.crud_permissions[4], false)
         ]
       else
         docs.crud_permissions
@@ -70,7 +70,8 @@ CREATE VIEW {{ private_schema }}.document_user_permissions WITH (security_barrie
   SELECT
   d.*
   from docs_path as d
-  where d.crud_permissions[2] = true; -- drop rows where read is false, since it's the same as not existing
+  -- drop rows where read is false, since it's the same as not existing
+  where d.crud_permissions[2] = true; 
 
 
 
