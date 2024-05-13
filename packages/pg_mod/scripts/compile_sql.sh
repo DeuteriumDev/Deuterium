@@ -31,10 +31,10 @@ fi
 main() {
     if [[ -z "${SKIP_FORMAT-}" ]]; then 
         # echo 'skipped'
-        j2 $1 $2
+        yarn node ./scripts/nunjucks.js $1 $2
     else
         # echo 'not skipped'
-        j2 $1 $2 | yarn run sql-formatter --config ./.sqlformaterrc
+        yarn node ./scripts/nunjucks.js $1 $2 | yarn run sql-formatter --config ./.sqlformaterrc
     fi
 }
 
