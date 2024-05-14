@@ -1,0 +1,10 @@
+{
+  "name": "dt_cli",
+  "packageManager": "yarn@4.2.2",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "lodash": "^4.17.21",
+    "pg": "^8.11.5",
+    "yargs": "^17.7.2"
+  }
+}
