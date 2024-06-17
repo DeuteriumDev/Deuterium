@@ -225,7 +225,7 @@ Each folder has a foreign key to a document which lets it relate back to the mas
 ALTER TABLE {{ public_schema }}.folders ENABLE ROW LEVEL SECURITY;
 
 -- "break out" of pg's query execution to pick up new db changes from the table's [create_folder_setup_trigger]
-create or replace function {{ private_schema }}.{{ public_schema }}_folders_create_check(_id uuid) returns TABLE (id uuid) as $$
+create or replace function {{ public_schema }}.{{ public_schema }}_folders_create_check(_id uuid) returns TABLE (id uuid) as $$
     SELECT docs.foreign_id
     FROM {{ private_schema }}.document_user_permissions docs
     WHERE docs.user_id = (select {{ private_schema }}.get_user_id())
@@ -247,7 +247,7 @@ CREATE POLICY {{ public_schema }}_folders_read ON {{ public_schema }}.folders FO
     )
 );
 
-CREATE POLICY {{ private_schema }}_folders_update ON {{ public_schema }}.folders FOR update to {{ authenticated_roles|join(', ') }} USING (
+CREATE POLICY {{ public_schema }}_folders_update ON {{ public_schema }}.folders FOR update to {{ authenticated_roles|join(', ') }} USING (
     id in (
         SELECT docs.foreign_id
         FROM {{ private_schema }}.document_user_permissions docs
@@ -256,7 +256,7 @@ CREATE POLICY {{ private_schema }}_folders_update ON {{ public_schema }}.folders
     )
 );
 
-CREATE POLICY {{ private_schema }}_folders_delete ON {{ public_schema }}.folders FOR delete to {{ authenticated_roles|join(', ') }} USING (
+CREATE POLICY {{ public_schema }}_folders_delete ON {{ public_schema }}.folders FOR delete to {{ authenticated_roles|join(', ') }} USING (
     id in (
         SELECT docs.foreign_id
         FROM {{ private_schema }}.document_user_permissions docs

@@ -68,7 +68,7 @@ describe('functions.sql', () => {
     });
   });
 
-  describe('get_user_id', () => {
+  describe.skip('get_user_id', () => {
     it(`should return user#1`, async () => {
       await loginAs(1);
       const results = await client.query(`

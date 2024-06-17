@@ -3,7 +3,7 @@
 {% if add_folders -%}
 
 -- create_folder_document_trigger
-create or replace function {{ private_schema }}.create_folder_setup_trigger()
+create or replace function {{ public_schema }}.create_folder_setup_trigger()
 returns trigger
 as $$
     declare
@@ -34,6 +34,6 @@ $$ language plpgsql VOLATILE;
 create trigger {{ public_schema }}_create_folder_setup_trigger
     before insert on {{ public_schema }}.folders
     for each row
-    execute function {{ private_schema }}.create_folder_setup_trigger();
+    execute function {{ public_schema }}.create_folder_setup_trigger();
 
 {% endif %}
