@@ -1,0 +1,17 @@
+version: {{ config_version }}
+
+connection_string: 'postgresql://<USER_NAME>:<PASSWORD>@<SERVER_ADDR>:<PORT?>/<SCHEMA>'
+preset: {{ config_preset }}
+
+# enables security policies on the given tables, needs to include schema path
+tables:
+  - schema.table
+# overrides:
+#   private_schema: private_schema
+#   public_schema: public_schema
+#   authenticated_roles:
+#     - authenticated
+#   owner: postgres
+#   include_authenticated_roles: true
+#   user_id_type: uuid
+#   users_table: auth.users

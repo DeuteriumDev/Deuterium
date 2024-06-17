@@ -28,16 +28,19 @@ drop policy if exists {{ public_schema }}_group_permissions_read ON {{ public_sc
 drop policy if exists {{ public_schema }}_group_permissions_update ON {{ public_schema }}.group_permissions;
 drop policy if exists {{ public_schema }}_group_permissions_delete ON {{ public_schema }}.group_permissions;
 
+{% if add_folders -%}
 drop policy if exists {{ public_schema }}_folders_create ON {{ public_schema }}.folders;
 drop policy if exists {{ public_schema }}_folders_read ON {{ public_schema }}.folders;
 drop policy if exists {{ public_schema }}_folders_update ON {{ public_schema }}.folders;
 drop policy if exists {{ public_schema }}_folders_delete ON {{ public_schema }}.folders;
+{% endif %}
 
-drop view if exists {{ public_schema }}.groups_view;
-drop view if exists {{ public_schema }}.recent_nodes_view;
-drop view if exists {{ public_schema }}.node_growth_view;
-drop view if exists {{ public_schema }}.document_permissions_view;
-drop view if exists {{ public_schema }}.documents_view;
+{% include 'templates/revert/views.sql' %}
+-- drop view if exists {{ public_schema }}.groups_view;
+-- drop view if exists {{ public_schema }}.recent_nodes_view;
+-- drop view if exists {{ public_schema }}.node_growth_view;
+-- drop view if exists {{ public_schema }}.document_permissions_view;
+-- drop view if exists {{ public_schema }}.documents_view;
 
 {% if add_folders -%}
 drop table if exists {{ public_schema }}.folders;

@@ -24,10 +24,10 @@ describe('query.spec.js', () => {
     // optional 1-at-a-time debugging for isolating a buggy :pirate: template
     if (process.env.DEBUG) {
       for (const file of TEST_SQL_FILES) {
-        await fileLoader(file, 'fixtures/postgres.json');
+        await fileLoader(file, 'configurations/postgres.json');
       }
     } else {
-      await fileLoader(TEST_SQL_FILES, 'fixtures/postgres.json');
+      await fileLoader(TEST_SQL_FILES, 'configurations/postgres.json');
     }
   }, TEST_TIME_OUT);
 

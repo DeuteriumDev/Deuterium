@@ -11,3 +11,7 @@
 
 #!.yarn/cache
 .pnp.*
+
+
+# dt config / development
+.dtrc.yml
