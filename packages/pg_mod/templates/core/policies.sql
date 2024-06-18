@@ -235,7 +235,7 @@ $$ LANGUAGE sql VOLATILE;
 
 
 CREATE POLICY {{ public_schema }}_folders_create ON {{ public_schema }}.folders FOR insert to {{ authenticated_roles|join(', ') }} with check (
-    EXISTS(select {{ private_schema }}.{{ public_schema }}_folders_create_check(id))
+    EXISTS(select {{ public_schema }}.{{ public_schema }}_folders_create_check(id))
 );
 
 CREATE POLICY {{ public_schema }}_folders_read ON {{ public_schema }}.folders FOR select to {{ authenticated_roles|join(', ') }} USING (

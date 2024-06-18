@@ -29,6 +29,11 @@ reset: ## Reset local DB to bare installation
 	@./scripts/compile_sql.sh templates/revert/all.sql configurations/postgres.json | psql $(DB_CONNECTION) > ./builds/_reset.txt 2>&1
 .PHONY: reset
 
+reset-config: ## Reset local DB config
+	@clear
+	@./scripts/compile_sql.sh templates/revert/dt_configuration.sql configurations/postgres.json | psql $(DB_CONNECTION) > ./builds/_reset.txt 2>&1
+.PHONY: reset
+
 load: reset ## Reset, then Load the postgres-fixture schema into the local db
 	@./scripts/compile_sql.sh templates/frameworks/postgres.sql configurations/postgres.json | psql $(DB_CONNECTION) > ./builds/_load.txt 2>&1
 .PHONY: load
