@@ -14,7 +14,6 @@ const CONFIGURATIONS_FOLDER = process.env.DT_CONFIGURATIONS_FOLDER
   : `./configurations/`;
 const VERSION = '0.1';
 const CONFIG_TEMPLATE = 'config_template.yml';
-const SCHEMA_FILE = 'schema.json';
 const TEMPLATES_FOLDER = process.env.DT_TEMPLATES_FOLDER
   ? `${process.env.DT_TEMPLATES_FOLDER}`
   : './templates';
@@ -133,11 +132,14 @@ export async function sync(
         modConfig,
       ),
     );
-    const configPresetKeyValues = Object.keys(modConfig).map(
+    const configPresetNameValues = Object.keys(modConfig).map(
       (k) => `('${k}','${modConfig[k]}')`,
     );
     await client.query(
-      `insert into ${modConfig.private_schema}.dt_configuration values ${configPresetKeyValues.join(', ')} on conflict (key) do update set value = EXCLUDED.value`,
+      `
+        insert into ${modConfig.private_schema}.dt_configuration values ${configPresetNameValues.join(', ')}
+         on conflict (name) do update set value = EXCLUDED.value
+        `,
     );
   } else {
     console.log('Updating existing install');
@@ -149,6 +151,7 @@ export async function uninstall(
   fileReader: typeof fs.readFile,
   PgClient: typeof Client,
 ) {
+  console.log('Uninstalling');
   let cliConfig;
   try {
     cliConfig = yaml.parse(
@@ -171,15 +174,16 @@ export async function uninstall(
     noCache: true,
   });
 
+  await client.connect();
   await client.query(
     nunjucksEnv.render(
-      path.join(__dirname, TEMPLATES_FOLDER, 'revert', 'all.sql'),
+      path.join(__dirname, TEMPLATES_FOLDER, 'revert', 'dt_configuration.sql'),
       modConfig,
     ),
   );
   await client.query(
     nunjucksEnv.render(
-      path.join(__dirname, TEMPLATES_FOLDER, 'revert', 'dt_configuration.sql'),
+      path.join(__dirname, TEMPLATES_FOLDER, 'revert', 'all.sql'),
       modConfig,
     ),
   );

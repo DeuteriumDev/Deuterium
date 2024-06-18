@@ -24,9 +24,9 @@ drop policy if exists {{ public_schema }}_group_permissions_update ON {{ public_
 drop policy if exists {{ public_schema }}_group_permissions_delete ON {{ public_schema }}.group_permissions;
 
 {% if add_folders -%}
-drop function if exists {{ public_schema }}.{{ public_schema }}_folders_create_check(_id uuid);
 drop policy if exists {{ public_schema }}_folders_create ON {{ public_schema }}.folders;
 drop policy if exists {{ public_schema }}_folders_read ON {{ public_schema }}.folders;
 drop policy if exists {{ public_schema }}_folders_update ON {{ public_schema }}.folders;
 drop policy if exists {{ public_schema }}_folders_delete ON {{ public_schema }}.folders;
+drop function if exists {{ public_schema }}.{{ public_schema }}_folders_create_check(_id uuid);
 {% endif %}

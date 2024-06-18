@@ -31,8 +31,13 @@ tests: ## Run available tests
 	@yarn run jest
 .PHONY: tests
 
-run-init-pg: build ## Run the cli tool
+run-uninstall-pg: run-init-pg ## Run the cli tool `uninstall` command
+	@node ./build/main.js --uninstall
+.PHONY: run-uninstall-pg
+
+run-init-pg: build ## Run the cli tool `init` command
 	@node ./build/main.js --init postgres
+	@sed -i '' -e "s,postgresql://<USER_NAME>:<PASSWORD>@<SERVER_ADDR>:<PORT?>/<SCHEMA>,$(DB_CONNECTION),g" .dtrc.yml
 .PHONY: run-init-pg
 
 
