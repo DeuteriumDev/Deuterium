@@ -5,6 +5,7 @@ import nunjucks from 'nunjucks';
 import path from 'path';
 import yaml from 'yaml';
 import { Client } from 'pg';
+import _ from 'lodash';
 
 import { Config } from './types';
 
@@ -48,6 +49,57 @@ const parser = yargs(process.argv.slice(2)).options({
   },
 });
 
+export async function getCliConfig(
+  configFile: string = DEFAULT_CONFIG_FILE,
+  fileReader: typeof fs.readFile,
+): Promise<Config> {
+  const cliConfig = yaml.parse(
+    await fileReader(configFile, {
+      encoding: 'utf-8',
+    }),
+  ) as Config;
+  return cliConfig;
+}
+
+export async function getModConfig(
+  cliConfig: Config,
+): Promise<Record<string, string | string[]>> {
+  const modConfig = require(
+    path.join(__dirname, CONFIGURATIONS_FOLDER, `${cliConfig.preset}.json`),
+  );
+
+  return {
+    ...modConfig,
+    version: cliConfig.version,
+    tables: _.sortBy(cliConfig.tables),
+    ...cliConfig.overrides,
+  };
+}
+
+export function parseRawConfig(
+  config: Record<string, string>,
+): Record<string, string | string[]> {
+  return {
+    ..._.fromPairs(
+      _.map(_.keys(config), (k) => {
+        if (/true|false/g.test(config[k])) {
+          return [k, JSON.parse(config[k])];
+        } else if (/,/g.test(config[k])) {
+          return [k, config[k].split(',')];
+        } else if (/[0-9]\.[0-9]/.test(config[k])) {
+          return [k, parseFloat(config[k])];
+        }
+
+        return [k, config[k]];
+      }),
+    ),
+    tables: config.tables.split(','),
+    authenticated_roles: config.authenticated_roles.split(
+      'authenticated_roles',
+    ),
+  };
+}
+
 export async function init(
   preset: string,
   configFile: string = DEFAULT_CONFIG_FILE,
@@ -73,18 +125,8 @@ export async function sync(
   fileReader: typeof fs.readFile,
   PgClient: typeof Client,
 ) {
-  let cliConfig;
-  try {
-    cliConfig = yaml.parse(
-      await fileReader(configFile, {
-        encoding: 'utf-8',
-      }),
-    ) as Config;
-  } catch (err) {
-    console.log(err);
-    console.error((err as Error).message);
-    process.exit(1);
-  }
+  const cliConfig = await getCliConfig(configFile, fileReader);
+  const modConfig = await getModConfig(cliConfig);
 
   const nunjucksEnv = nunjucks.configure(__dirname, {
     trimBlocks: true,
@@ -92,9 +134,6 @@ export async function sync(
     noCache: true,
   });
   const client = new PgClient(cliConfig.connection_string);
-  const modConfig = require(
-    path.join(__dirname, CONFIGURATIONS_FOLDER, `${cliConfig.preset}.json`),
-  );
   await client.connect();
   const isConfigSchemaInstalled = (
     await client.query(
@@ -133,7 +172,8 @@ export async function sync(
       ),
     );
     const configPresetNameValues = Object.keys(modConfig).map(
-      (k) => `('${k}','${modConfig[k]}')`,
+      (k) =>
+        `('${k}','${_.isArray(modConfig[k]) ? (modConfig[k] as unknown as string[]).join(',') : modConfig[k]}')`,
     );
     await client.query(
       `
@@ -143,6 +183,14 @@ export async function sync(
     );
   } else {
     console.log('Updating existing install');
+    const dtResult = await client.query(
+      `select * from ${modConfig.private_schema}.dt_configuration`,
+    );
+    const rawDbConfig = parseRawConfig(
+      _.fromPairs(_.map(dtResult.rows, (r) => [r.name, r.value])),
+    );
+    console.log(modConfig);
+    console.log(rawDbConfig);
   }
 }
 
@@ -152,21 +200,8 @@ export async function uninstall(
   PgClient: typeof Client,
 ) {
   console.log('Uninstalling');
-  let cliConfig;
-  try {
-    cliConfig = yaml.parse(
-      await fileReader(configFile, {
-        encoding: 'utf-8',
-      }),
-    ) as Config;
-  } catch (err) {
-    console.log(err);
-    console.error((err as Error).message);
-    process.exit(1);
-  }
-  const modConfig = require(
-    path.join(__dirname, CONFIGURATIONS_FOLDER, `${cliConfig.preset}.json`),
-  );
+  const cliConfig = await getCliConfig(configFile, fileReader);
+  const modConfig = await getModConfig(cliConfig);
   const client = new PgClient(cliConfig.connection_string);
   const nunjucksEnv = nunjucks.configure(__dirname, {
     trimBlocks: true,
