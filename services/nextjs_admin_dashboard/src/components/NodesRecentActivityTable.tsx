@@ -6,43 +6,22 @@ import Link from 'next/link';
 
 import Button from '~/components/Button';
 import { Table, TableBody, TableCell, TableRow } from '~/components/Table';
-import sql from '~/libs/db';
 import formatCellContent from '~/libs/formatCellContent';
-import buildQuery from '~/libs/buildQuery';
-
-export type Node = {
-  id: string;
-  name: string;
-  type: 'user' | 'group' | 'permission' | 'document';
-  created_at: Date;
-};
+import queryRecentNodes from '~/actions/queryRecentNodes';
+import type { Node } from '~/libs/types';
 
 const PAGE_SIZE = 10;
 const TABLE_COLS = ['name', 'type', 'created_at'] as (keyof Node)[];
 
 interface NodesRecentActivityTableProps {
   page: number;
+  queryRecentNodes: typeof queryRecentNodes;
 }
-
-const queryRecentNodes = async ({ page }: { page: number }) =>
-  buildQuery<Node>(
-    sql,
-    `
-select 
-  id,
-  '[' || name || '](/' || type || 's/' || id || ')' as name,
-  type,
-  created_at
-from ${process.env.PUBLIC_SCHEMA}.recent_nodes_view
-limit ${PAGE_SIZE}
-offset ${page * PAGE_SIZE}
-`,
-  );
 
 export default async function NodesRecentActivityTable(
   props: NodesRecentActivityTableProps,
 ) {
-  const { page = 0 } = props;
+  const { page = 0, queryRecentNodes } = props;
   const { data, errorMessage } = await queryRecentNodes({ page });
 
   return (
@@ -66,8 +45,8 @@ export default async function NodesRecentActivityTable(
               </TableRow>
             )}
             {!errorMessage &&
-              data.rows &&
-              _.map(data.rows, (d) => (
+              data?.rows &&
+              _.map(data?.rows, (d) => (
                 <TableRow key={d.id}>
                   {_.map(TABLE_COLS, (colName) => (
                     <TableCell key={`${d.id}-${colName}`}>
@@ -76,7 +55,7 @@ export default async function NodesRecentActivityTable(
                   ))}
                 </TableRow>
               ))}
-            {!errorMessage && data.rowCount === 0 && (
+            {!errorMessage && data?.rowCount === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={TABLE_COLS.length}
@@ -102,8 +81,8 @@ export default async function NodesRecentActivityTable(
           <Button
             variant="outline"
             size="sm"
-            disabled={data.rowCount < (page + 1) * PAGE_SIZE}
-            asChild={data.rowCount > (page + 1) * PAGE_SIZE}
+            disabled={(data?.rowCount || 0) < (page + 1) * PAGE_SIZE}
+            asChild={(data?.rowCount || 0) > (page + 1) * PAGE_SIZE}
           >
             <Link href={`/dashboard?page=${page + 1}`}>Next</Link>
           </Button>

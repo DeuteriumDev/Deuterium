@@ -18,14 +18,22 @@ dev: ## startup the app for local use
 	@yarn run next dev
 .PHONY: dev
 
-build: ## build the app
+clean:
+	@rm -rf .next
+.PHONY: clean
+
+build: clean ## build the app
+	@clear
 	@yarn run next build
+	@mv .next/static .next/standalone/.next/
+	@mv .next/public .next/standalone || true
 .PHONY: build
 
 start: ## Run the built version of the app
-	@yarn run next start
+	@PORT=4004 node .next/standalone/server.js
 .PHONY: start
 
 lint: ## Lint the app, should run before build since it's more terse and faster
 	@yarn run next lint
 .PHONY: lint
+

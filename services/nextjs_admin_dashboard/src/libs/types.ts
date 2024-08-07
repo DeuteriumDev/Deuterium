@@ -37,3 +37,11 @@ export interface User extends Record<string, unknown> {
   email: string;
   created_at: Date;
 }
+
+
+export type Node = {
+  id: string;
+  name: string;
+  type: 'user' | 'group' | 'permission' | 'document';
+  created_at: Date;
+};

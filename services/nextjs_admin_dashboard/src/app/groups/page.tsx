@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import DataTable from '~/components/DataTable';
+import RouterTable from '~/components/RouterTable';
 import queryGroups from '~/actions/queryGroups';
 import { PAGE_SIZE } from '~/config';
 
@@ -36,7 +36,7 @@ export default async function GroupsPage(props: GroupPageProps) {
   return (
     <div>
       <h2 className="ml-1 text-2xl font-bold tracking-tight">Groups</h2>
-      <DataTable
+      <RouterTable
         page={Number(page)}
         hiddenColumns={_.castArray(hiddenColumns)}
         orderBy={orderBy}
@@ -44,7 +44,7 @@ export default async function GroupsPage(props: GroupPageProps) {
         where={where}
         columns={columns}
         pageSize={PAGE_SIZE}
-        rows={queryGroupsResult.data?.rows}
+        rows={queryGroupsResult.data?.rows || []}
         errorMessage={queryGroupsResult.errorMessage}
         newLink="/groups/new"
       />

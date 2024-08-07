@@ -6,6 +6,8 @@ preset: {{ config_preset }}
 # enables security policies on the given tables, needs to include schema path
 tables:
   - schema.table
+
+# override any of the following internal configs directly
 # overrides:
 #   private_schema: private_schema
 #   public_schema: public_schema

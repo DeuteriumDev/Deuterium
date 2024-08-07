@@ -58,7 +58,7 @@ const queryDocuments = async (args: QueryDocumentArgs) =>
     `
       select
         id,
-        '[' || name || '](/nodes/' || type || 's/' || id || ')' as name,
+        '[' || name || '](/' || type || 's/' || id || ')' as name,
         type,
         created_at
       from ${process.env.PUBLIC_SCHEMA}.documents_view
@@ -133,10 +133,9 @@ export default async function DocumentsTable(props: DocumentsTableProps) {
                 <Link
                   replace
                   href={buildQuery({
-                    hiddenColumns:
-                      _.indexOf(hiddenColumns, column) === -1
-                        ? _.concat(hiddenColumns, column)
-                        : _.without(hiddenColumns, column),
+                    hiddenColumns: (_.indexOf(hiddenColumns, column) === -1
+                      ? _.concat(hiddenColumns, column)
+                      : _.without(hiddenColumns, column)) as string[],
                   })}
                   className="flex"
                 >
@@ -169,12 +168,12 @@ export default async function DocumentsTable(props: DocumentsTableProps) {
                   <Link
                     replace
                     href={buildQuery({
-                      orderBy: column,
+                      orderBy: column as string,
                       orderDir: orderDir === 'asc' ? 'desc' : 'asc',
                     })}
                     className="flex"
                   >
-                    {getHeaderIcon(column)}
+                    {getHeaderIcon(column as string)}
                     {column}
                   </Link>
                 </TableHead>
@@ -193,8 +192,8 @@ export default async function DocumentsTable(props: DocumentsTableProps) {
               </TableRow>
             )}
             {!errorMessage &&
-              data?.rowCount > 0 &&
-              _.map(data.rows, (row) => (
+              (data?.rowCount || 0) > 0 &&
+              _.map(data?.rows, (row) => (
                 <TableRow key={row.id}>
                   {_.map(
                     _.without(columns, ...hiddenColumns),
@@ -234,8 +233,8 @@ export default async function DocumentsTable(props: DocumentsTableProps) {
           <Button
             variant="outline"
             size="sm"
-            disabled={data.rowCount < PAGE_SIZE}
-            asChild={data.rowCount === PAGE_SIZE}
+            disabled={(data?.rowCount || 0) < PAGE_SIZE}
+            asChild={data?.rowCount === PAGE_SIZE}
           >
             <Link replace href={buildQuery({ page: page + 1 })}>
               Next

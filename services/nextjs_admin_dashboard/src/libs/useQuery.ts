@@ -44,7 +44,6 @@ export default function useQuery<T extends QueryResultRow>(
   const [errorMessage, setError] = useState<string | null>(null);
 
   const execute: ExecuteFunc<T> = async (...args) => {
-    console.log({ args });
     setError(null);
     setLoading(true);
     try {

@@ -23,6 +23,7 @@ build: clean ## build cli by compiling ts files and copying deps from neighborin
 	@cp ./src/config_template.yml ./build
 	@cp -r ../pg_mod/configurations ./build/
 	@cp -r ../pg_mod/templates ./build/
+	@cp -r ../../services/nextjs_admin_dashboard/.next/standalone ./build/standalone
 	@yarn run typescript-json-schema ./src/types.ts Config > ./build/schema.json
 .PHONY: build
 
@@ -45,3 +46,6 @@ run-sync-pg: run-init-pg
 	@node ./build/main.js --sync
 .PHONY: run-sync-pg
 
+run-dash-pg: build
+	@node ./build/main.js --dashboard
+.PHONY: run-dash-pg

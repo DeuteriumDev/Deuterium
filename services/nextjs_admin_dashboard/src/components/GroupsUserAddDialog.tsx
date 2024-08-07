@@ -64,7 +64,7 @@ export default function GroupsUserAddDialog(props: GroupsUserAddDialogProps) {
 
   const _handleAddUsers = async () => {
     const data = await mutate.execute();
-    if (!data.errorMessage) {
+    if (!data?.errorMessage) {
       setSelected([]);
       setWhere('');
     }
