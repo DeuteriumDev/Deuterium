@@ -4,4 +4,8 @@ export type Config = {
   tables: string[];
   connection_string: string;
   preset: string;
+  dashboard?: {
+    host?: string;
+    port?: number;
+  };
 };

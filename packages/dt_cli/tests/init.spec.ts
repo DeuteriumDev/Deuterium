@@ -23,7 +23,7 @@ describe('main#init', () => {
       connection_string:
         'postgresql://<USER_NAME>:<PASSWORD>@<SERVER_ADDR>:<PORT?>/<SCHEMA>',
       preset: 'postgres',
-      tables: ['schema.table'],
+      // tables: ['schema.table'],
     });
   });
 });

@@ -95,16 +95,12 @@ export async function sync(
   configFile: string = DEFAULT_CONFIG_FILE,
   fileReader: typeof fs.readFile,
   PgClient: typeof Client,
+  render: typeof nunjucks.render,
 ) {
   const cliConfig = await getCliConfig(configFile, fileReader);
   const modConfig = await getModConfig(cliConfig);
-
-  const nunjucksEnv = nunjucks.configure(__dirname, {
-    trimBlocks: true,
-    lstripBlocks: true,
-    noCache: true,
-  });
   const client = new PgClient(cliConfig.connection_string);
+
   await client.connect();
   const isConfigSchemaInstalled = (
     await client.query(
@@ -121,7 +117,7 @@ export async function sync(
   if (!isConfigSchemaInstalled) {
     console.error('First install');
     await client.query(
-      nunjucksEnv.render(
+      render(
         path.join(
           __dirname,
           TEMPLATES_FOLDER,
@@ -132,7 +128,7 @@ export async function sync(
       ),
     );
     await client.query(
-      nunjucksEnv.render(
+      render(
         path.join(
           __dirname,
           TEMPLATES_FOLDER,
@@ -154,7 +150,7 @@ export async function sync(
     );
     await client.end();
   } else {
-    console.error('Updating existing install');
+    console.info('Updating existing install');
     const dtResult = await client.query(
       `select * from ${modConfig.private_schema}.dt_configuration`,
     );
@@ -164,29 +160,29 @@ export async function sync(
 
     // all synched up, do nothing
     if (_.isEqual(modConfig, dBConfig)) {
-      console.error('DB already synchronized');
+      console.info('DB already synchronized');
       return;
     }
 
     // if the tables are synched, but something else isn't, full resync
     if (_.isEqual(modConfig.tables, dBConfig.tables)) {
-      console.error('Full re-synchronizing mod');
+      console.info('Full re-synchronizing mod');
       await client.end();
       await uninstall(configFile, fileReader, PgClient);
-      await sync(configFile, fileReader, PgClient);
+      await sync(configFile, fileReader, PgClient, render);
 
       return;
     }
 
     // tables need synching
-    console.error('Modding tables');
+    console.info('Modding tables');
     const tablesToBeUnSynched = _.difference(modConfig.tables, dBConfig.tables);
     const tablesToBeSynched = _.difference(dBConfig.tables, modConfig.tables);
 
     await Promise.all(
       _.map(tablesToBeSynched, (t) =>
         client.query(
-          nunjucksEnv.render(
+          render(
             path.join(__dirname, TEMPLATES_FOLDER, 'core', 'add_table.sql'),
             {
               config: cliConfig,
@@ -200,7 +196,7 @@ export async function sync(
     await Promise.all(
       _.map(tablesToBeUnSynched, (t) =>
         client.query(
-          nunjucksEnv.render(
+          render(
             path.join(
               __dirname,
               TEMPLATES_FOLDER,
@@ -223,7 +219,7 @@ export async function uninstall(
   fileReader: typeof fs.readFile,
   PgClient: typeof Client,
 ) {
-  console.error('Uninstalling');
+  console.info('Uninstalling');
   const cliConfig = await getCliConfig(configFile, fileReader);
   const modConfig = await getModConfig(cliConfig);
   const client = new PgClient(cliConfig.connection_string);
@@ -249,20 +245,34 @@ export async function uninstall(
   await client.end();
 }
 
-export async function dashboard() {
-  let dashboard: ReturnType<typeof proc.exec>;
+export async function dashboard(
+  configFile: string = DEFAULT_CONFIG_FILE,
+  fileReader: typeof fs.readFile,
+  exec: typeof proc.exec,
+) {
+  const cliConfig = await getCliConfig(configFile, fileReader);
+
+  let dashboard: ReturnType<typeof exec>;
+  const envVars = [
+    cliConfig.dashboard?.host ? `HOST=${cliConfig.dashboard?.host}` : '',
+    cliConfig.dashboard?.port ? `PORT=${cliConfig.dashboard?.port}` : '',
+  ].join(' ');
   if (process.env.NODE_ENV === 'development') {
-    dashboard = proc.exec('make dev', {
+    dashboard = exec('make dev', {
       cwd: path.join('..', '..', 'services', 'nextjs_admin_dashboard'),
     });
   } else {
-    dashboard = proc.exec('node standalone/server.js', {
+    dashboard = exec(`${envVars} node standalone/server.js`, {
       cwd: __dirname,
     });
   }
-  await new Promise((accept, reject) => {
-    dashboard.on('spawn', (sig: unknown) => console.error(`Server started: http://${process.env.HOSTNAME || '0.0.0.0'}:${process.env.PORT || 3000}`));
-    // dashboard.on('message', (sig: unknown) => console.error('message', sig));
+  return new Promise((accept, reject) => {
+    dashboard.on('spawn', (sig: unknown) =>
+      console.info(
+        `Server started: http://${cliConfig.dashboard?.host || 'localhost'}:${cliConfig.dashboard?.port || 3000}`,
+      ),
+    );
+    // dashboard.on('message', (sig: unknown) => console.info('message', sig));
     dashboard.on('error', reject);
     dashboard.on('exit', accept);
   });
@@ -304,10 +314,17 @@ async function main() {
   });
   try {
     const argv = await parser.parse();
+    const nunjucksEnv = nunjucks.configure(__dirname, {
+      trimBlocks: true,
+      lstripBlocks: true,
+      noCache: true,
+    });
+
     if (argv.init) await init(argv.init, argv.c, fs.writeFile);
-    else if (argv.sync) await sync(argv.c, fs.readFile, Client);
+    else if (argv.sync)
+      await sync(argv.c, fs.readFile, Client, nunjucksEnv.render);
     else if (argv.uninstall) await uninstall(argv.c, fs.readFile, Client);
-    else if (argv.dashboard) await dashboard();
+    else if (argv.dashboard) await dashboard(argv.c, fs.readFile, proc.exec);
     else {
       console.error(await parser.getHelp());
       process.exit(1);

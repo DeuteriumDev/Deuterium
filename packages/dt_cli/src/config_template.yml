@@ -4,8 +4,8 @@ connection_string: 'postgresql://<USER_NAME>:<PASSWORD>@<SERVER_ADDR>:<PORT?>/<S
 preset: {{ config_preset }}
 
 # enables security policies on the given tables, needs to include schema path
-tables:
-  - schema.table
+# tables:
+#   - schema.table
 
 # override any of the following internal configs directly
 # overrides:
@@ -17,3 +17,8 @@ tables:
 #   include_authenticated_roles: true
 #   user_id_type: uuid
 #   users_table: auth.users
+
+# configure the dashboard network settings
+# dashboard:
+#   host: 0.0.0.0
+#   port: 3000
