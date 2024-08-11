@@ -115,7 +115,7 @@ export async function sync(
   ).rows[0].exists;
   // do full install from scratch
   if (!isConfigSchemaInstalled) {
-    console.error('First install');
+    console.info('First install');
     await client.query(
       render(
         path.join(
@@ -252,29 +252,29 @@ export async function dashboard(
 ) {
   const cliConfig = await getCliConfig(configFile, fileReader);
 
-  let dashboard: ReturnType<typeof exec>;
+  let dashboardProcess: ReturnType<typeof exec>;
   const envVars = [
     cliConfig.dashboard?.host ? `HOST=${cliConfig.dashboard?.host}` : '',
     cliConfig.dashboard?.port ? `PORT=${cliConfig.dashboard?.port}` : '',
   ].join(' ');
   if (process.env.NODE_ENV === 'development') {
-    dashboard = exec('make dev', {
+    dashboardProcess = exec('make dev', {
       cwd: path.join('..', '..', 'services', 'nextjs_admin_dashboard'),
     });
   } else {
-    dashboard = exec(`${envVars} node standalone/server.js`, {
+    dashboardProcess = exec(`${envVars} node standalone/server.js`, {
       cwd: __dirname,
     });
   }
   return new Promise((accept, reject) => {
-    dashboard.on('spawn', (sig: unknown) =>
+    dashboardProcess.on('spawn', (sig: unknown) =>
       console.info(
         `Server started: http://${cliConfig.dashboard?.host || 'localhost'}:${cliConfig.dashboard?.port || 3000}`,
       ),
     );
     // dashboard.on('message', (sig: unknown) => console.info('message', sig));
-    dashboard.on('error', reject);
-    dashboard.on('exit', accept);
+    dashboardProcess.on('error', reject);
+    dashboardProcess.on('exit', accept);
   });
 }
 
