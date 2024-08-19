@@ -3,5 +3,6 @@
 {% include 'templates/revert/functions.sql' %}
 {% include 'templates/revert/views.sql' %}
 {% include 'templates/revert/tables.sql' %}
+{% include 'templates/revert/dt_configuration.sql' %}
 {% include 'templates/revert/schemas.sql' %}
 {% include 'templates/revert/roles.sql' %}

@@ -3,10 +3,10 @@ const exec = util.promisify(require('child_process').exec);
 const _ = require('lodash');
 
 function loginAsBuilder(client) {
-  return async (userID) =>
+  return async (userId) =>
     await client.query(`
       set local role authenticated;
-      set local dt.user_id to ${userID};
+      set local dt.user_id to ${userId};
     `); // cant use params in a multi-query command
 }
 

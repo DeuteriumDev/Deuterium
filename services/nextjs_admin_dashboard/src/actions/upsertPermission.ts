@@ -16,11 +16,11 @@ type UpsertPermissionArgsNew = {
   can_delete?: boolean;
 };
 
-type UpsertPermissionArgsID = {
+type UpsertPermissionArgsId = {
   id: string;
 } & Partial<UpsertPermissionArgsNew>;
 
-type UpsertPermissionArgs = UpsertPermissionArgsID | UpsertPermissionArgsNew;
+type UpsertPermissionArgs = UpsertPermissionArgsId | UpsertPermissionArgsNew;
 
 /**
  * Insert of update a given permission. CRUDs default to all true;
