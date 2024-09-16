@@ -28,7 +28,7 @@ import {
 import NodesFilterForm from '~/components/NodesFilterForm';
 import formatCellContent from '~/libs/formatCellContent';
 
-interface GroupsSearchParams {
+interface SearchParams {
   hiddenColumns?: string[];
   page?: number;
   orderBy?: string;
@@ -36,7 +36,7 @@ interface GroupsSearchParams {
   where?: string;
 }
 type Row = Record<string, unknown> & { id: string };
-interface GroupsTableProps extends Required<GroupsSearchParams> {
+interface RouterTableProps extends Required<SearchParams> {
   columns: (keyof Row)[];
   rows: Row[];
   pageSize: number;
@@ -44,7 +44,7 @@ interface GroupsTableProps extends Required<GroupsSearchParams> {
   newLink?: string;
 }
 
-export default function DataTable(props: GroupsTableProps) {
+export default function RouterTable(props: RouterTableProps) {
   const {
     hiddenColumns = [],
     page = 0,
@@ -58,7 +58,7 @@ export default function DataTable(props: GroupsTableProps) {
     newLink,
   } = props;
 
-  const buildQuery = (params?: GroupsSearchParams) => ({
+  const buildQuery = (params?: SearchParams) => ({
     query: {
       hiddenColumns: params?.hiddenColumns || hiddenColumns,
       page: params?.page || page,

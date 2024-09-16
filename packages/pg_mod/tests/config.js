@@ -1,7 +1,7 @@
 const TEST_TIME_OUT = Number(process.env.TEST_TIME_OUT) || 20000;
 
 const TEST_SQL_FILES = [
-  'templates/extra/cleanup.sql',
+  'templates/revert/all.sql',
   'templates/core/roles.sql',
   'templates/core/schemas.sql',
   'templates/core/tables.sql',

@@ -64,27 +64,27 @@ grant execute on function {{ private_schema }}.is_member_of to {{ authenticated_
 
 
 -- reduce_permissions
-create or replace function {{ private_schema }}.reduce_permissions(
-  permissions_inherit_chain_array_arg bool[], permissions_aggregate_array_arg anyarray
-) returns bool[] AS $$
-	select array_agg(b)
-	from (
-	select v
-	from unnest(
-		permissions_aggregate_array_arg[:coalesce(array_position(permissions_inherit_chain_array_arg, false), array_length(permissions_aggregate_array_arg, 1))]
-	) u(v)
-	where v is not null
-	limit 4
-	) cruds(b)
-$$ language sql stable;
+-- create or replace function {{ private_schema }}.reduce_permissions(
+--   permissions_inherit_chain_array_arg bool[], permissions_aggregate_array_arg anyarray
+-- ) returns bool[] AS $$
+-- 	select array_agg(b)
+-- 	from (
+-- 	select v
+-- 	from unnest(
+-- 		permissions_aggregate_array_arg[:coalesce(array_position(permissions_inherit_chain_array_arg, false), array_length(permissions_aggregate_array_arg, 1))]
+-- 	) u(v)
+-- 	where v is not null
+-- 	limit 4
+-- 	) cruds(b)
+-- $$ language sql stable;
 
-comment on function {{ private_schema }}.reduce_permissions(
-  permissions_inherit_chain_array_arg bool[], permissions_aggregate_array_arg anyarray
-) is E'Given the [permissions_inherit_chain_array_arg] and [permissions_aggregate_array_arg], returns a reduced `bool[]` of C,R,U,D permissions';
+-- comment on function {{ private_schema }}.reduce_permissions(
+--   permissions_inherit_chain_array_arg bool[], permissions_aggregate_array_arg anyarray
+-- ) is E'Given the [permissions_inherit_chain_array_arg] and [permissions_aggregate_array_arg], returns a reduced `bool[]` of C,R,U,D permissions';
 
-alter function {{ private_schema }}.reduce_permissions owner to {{ owner }};
+-- alter function {{ private_schema }}.reduce_permissions owner to {{ owner }};
 
-grant execute on function {{ private_schema }}.reduce_permissions to {{ authenticated_roles|join(', ') }};
+-- grant execute on function {{ private_schema }}.reduce_permissions to {{ authenticated_roles|join(', ') }};
 
 -- get_default_document_parent
 create or replace function {{ private_schema }}.get_default_document_parent()

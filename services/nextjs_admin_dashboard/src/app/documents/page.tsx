@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { Suspense } from 'react';
-import DocumentsTable from '~/components/DocumentsTable';
-import TableSkeleton from '~/components/TableSkeleton';
+import queryDocuments from '~/actions/queryDocuments';
+import RouterTable from '~/components/RouterTable';
+import { PAGE_SIZE } from '~/config';
 
 interface DocumentPageProps {
   searchParams: {
@@ -12,7 +12,10 @@ interface DocumentPageProps {
     where: string;
   };
 }
-export default function Documents(props: DocumentPageProps) {
+
+const columns = ['name', 'type', 'created_at'];
+
+export default async function Documents(props: DocumentPageProps) {
   const {
     searchParams: {
       page = 0,
@@ -22,18 +25,27 @@ export default function Documents(props: DocumentPageProps) {
       where = '',
     },
   } = props;
+
+  const queryDocResults = await queryDocuments({
+    page: Number(page),
+    orderBy,
+    orderDir,
+    where,
+  });
   return (
     <div>
       <h2 className="ml-1 text-2xl font-bold tracking-tight">Documents</h2>
-      <Suspense fallback={<TableSkeleton />}>
-        <DocumentsTable
-          page={Number(page)}
-          hiddenColumns={_.castArray(hiddenColumns)}
-          orderBy={orderBy}
-          orderDir={orderDir}
-          where={where}
-        />
-      </Suspense>
+      <RouterTable
+        page={Number(page)}
+        hiddenColumns={_.castArray(hiddenColumns)}
+        orderBy={orderBy}
+        orderDir={orderDir}
+        where={where}
+        columns={columns}
+        pageSize={PAGE_SIZE}
+        rows={queryDocResults.data?.rows || []}
+        errorMessage={queryDocResults.errorMessage}
+      />
     </div>
   );
 }

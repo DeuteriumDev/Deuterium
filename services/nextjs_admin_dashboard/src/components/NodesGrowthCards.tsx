@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import { User2, Users, Lock, FileText } from 'lucide-react';
 
+import queryNodesGrowths from '~/actions/queryNodeGrowths';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/Card';
-import sql from '~/libs/db';
 
 export const NODES_CARDS_CONFIG = {
   user: User2,
@@ -11,39 +11,13 @@ export const NODES_CARDS_CONFIG = {
   document: FileText,
 };
 
-export type NodeType = 'user' | 'group' | 'permission' | 'document';
-
-interface NodeGrowthResult {
-  type: NodeType;
-  total: number;
-  count_this_month: number;
+interface NodeGrowthCardsProps {
+  queryNodesGrowths: typeof queryNodesGrowths;
 }
 
-export async function queryNodesGrowths(client: typeof sql) {
-  let data = null;
-  let errorMessage = null;
-
-  try {
-    data = await client<NodeGrowthResult>(`
-      select *
-      from public.node_growth_view
-    `);
-  } catch (e) {
-    if (e instanceof Error && e.name === 'PostgresError') {
-      errorMessage = `Postgres error: ${e.cause}`;
-    } else {
-      errorMessage = 'Error';
-    }
-  }
-
-  return {
-    data,
-    errorMessage,
-  };
-}
-
-export default async function NodesGrowthCards() {
-  const { data, errorMessage } = await queryNodesGrowths(sql);
+export default async function NodesGrowthCards(props: NodeGrowthCardsProps) {
+  const { queryNodesGrowths } = props;
+  const { data, errorMessage } = await queryNodesGrowths();
 
   return (
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
@@ -54,7 +28,7 @@ export default async function NodesGrowthCards() {
           <Card key={d.type}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium capitalize">
-                {d.type}
+                {`${d.type}s`}
               </CardTitle>
               <Icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>

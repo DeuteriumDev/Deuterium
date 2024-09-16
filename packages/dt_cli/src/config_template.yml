@@ -1,0 +1,24 @@
+version: {{ config_version }}
+
+connection_string: 'postgresql://<USER_NAME>:<PASSWORD>@<SERVER_ADDR>:<PORT?>/<SCHEMA>'
+preset: {{ config_preset }}
+
+# enables security policies on the given tables, needs to include schema path
+# tables:
+#   - schema.table
+
+# override any of the following internal configs directly
+# overrides:
+#   private_schema: private_schema
+#   public_schema: public_schema
+#   authenticated_roles:
+#     - authenticated
+#   owner: postgres
+#   include_authenticated_roles: true
+#   user_id_type: uuid
+#   users_table: auth.users
+
+# configure the dashboard network settings
+# dashboard:
+#   host: 0.0.0.0
+#   port: 3000

@@ -14,8 +14,8 @@ install: ## Install pre-req software
 
 builds: ## Build all available framework migrations according to the basic data
 	@clear
-	@./scripts/compile_sql.sh templates/frameworks/postgres.sql fixtures/postgres.json > ./builds/_postgres.sql
-	@./scripts/compile_sql.sh templates/frameworks/supabase.sql fixtures/supabase.json > ./builds/_supabase.sql
+	@./scripts/compile_sql.sh templates/frameworks/postgres.sql configurations/postgres.json > ./builds/_postgres.sql
+	@./scripts/compile_sql.sh templates/frameworks/supabase.sql configurations/supabase.json > ./builds/_supabase.sql
 .PHONY: builds
  
 help: ## Show this help
@@ -26,16 +26,21 @@ help: ## Show this help
 
 reset: ## Reset local DB to bare installation
 	@clear
-	@./scripts/compile_sql.sh templates/extra/cleanup.sql fixtures/postgres.json | psql $(DB_CONNECTION) > ./builds/_reset.txt 2>&1
+	@./scripts/compile_sql.sh templates/revert/all.sql configurations/postgres.json | psql $(DB_CONNECTION) > ./builds/_reset.txt 2>&1
+.PHONY: reset
+
+reset-config: ## Reset local DB config
+	@clear
+	@./scripts/compile_sql.sh templates/revert/dt_configuration.sql configurations/postgres.json | psql $(DB_CONNECTION) > ./builds/_reset.txt 2>&1
 .PHONY: reset
 
 load: reset ## Reset, then Load the postgres-fixture schema into the local db
-	@./scripts/compile_sql.sh templates/frameworks/postgres.sql fixtures/postgres.json | psql $(DB_CONNECTION) > ./builds/_load.txt 2>&1
+	@./scripts/compile_sql.sh templates/frameworks/postgres.sql configurations/postgres.json | psql $(DB_CONNECTION) > ./builds/_load.txt 2>&1
 .PHONY: load
 
 seed: load ## Reset, Load schema, then use "postgres" seed to fil in data
 	@clear
-	@./scripts/compile_sql.sh tests/seeds/postgres_seed.sql fixtures/postgres.json | psql $(DB_CONNECTION) > ./builds/_seed.txt 2>&1
+	@./scripts/compile_sql.sh tests/seeds/postgres_seed.sql configurations/postgres.json | psql $(DB_CONNECTION) > ./builds/_seed.txt 2>&1
 .PHONY: seed
 
 dump: ## Dump current DB to `out.tar`
