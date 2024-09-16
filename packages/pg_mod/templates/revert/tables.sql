@@ -1,6 +1,4 @@
-{% if add_folders -%}
-drop table if exists {{ public_schema }}.folders;
-{% endif %}
+
 drop table if exists {{ public_schema }}.document_permissions cascade;
 drop table if exists {{ public_schema }}.group_permissions cascade;
 

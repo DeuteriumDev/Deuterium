@@ -154,20 +154,3 @@ comment on table {{ public_schema }}.document_permissions is E'TODO';
 
 grant all on {{ public_schema }}.document_permissions to {{ authenticated_roles|join(', ') }};
 
-{% if add_folders -%}
--- folders
-create table {{ public_schema }}.folders (
-    id uuid DEFAULT gen_random_uuid() primary key,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    name text,
-    description text
-);
-
-alter table {{ public_schema }}.folders owner to {{ owner }};
-
-comment on table {{ public_schema }}.folders is E'DT generated folders table for organizing data in a typical user friendly manner';
-
-grant all on {{ public_schema }}.folders to {{ authenticated_roles|join(', ') }};
-
-{% endif %}

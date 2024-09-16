@@ -17,7 +17,6 @@ const config = {
 
 const pgPreset = {
   version: 0.1,
-  add_folders: true,
   authenticated_roles: ['authenticated'],
   configuration: 'postgres',
   create_users_table: true,

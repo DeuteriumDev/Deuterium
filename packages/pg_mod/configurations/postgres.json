@@ -8,6 +8,5 @@
   "create_users_table": true,
   "user_id_type": "serial",
   "users_table": "public.users",
-  "add_folders": true,
   "debug": true
 }
